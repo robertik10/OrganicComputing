@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 def count_particle_neighbours():
-    #TODO
+    #TODO coc
     '''particle_neighbours = [agent.neighbours for agent in model.schedule.agents]
     x = filter(lambda instance: isinstance(instance, ParticleAgent) ,sorted(particle_neighbours))
 
