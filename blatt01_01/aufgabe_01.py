@@ -11,11 +11,21 @@ import pandas as pd
 # rechnet die durchscnittliche Partikel Nachbarszahl von allen vorhandenen Partikeln aus
 def average_particle_neighbours(model):
     # generating list with only particle neighbours
-    particle_neighbours = [agent.neighbours for agent in model.schedule.agents if isinstance(agent, ParticleAgent)]
+    particle_neighbour_count = [agent.neighbours for agent in model.schedule.agents if isinstance(agent, ParticleAgent)]
 
-    average = sum(particle_neighbours) / len(particle_neighbours)
+    average = sum(particle_neighbour_count) / len(particle_neighbour_count)
 
     return average
+
+
+# überprüft ob alle Partikel mindestens x Nachbarn haben
+def all_have_x_neighbours(model, x):
+    # generating list with only particle neighbours
+    particle_neighbour_count = [agent.neighbours for agent in model.schedule.agents if isinstance(agent, ParticleAgent)]
+    if any(count < x for count in particle_neighbour_count):
+        return False
+    else:
+        return True
 
 
 # zeigt ein Schaubild mit allen platzierten Partikeln
@@ -33,6 +43,13 @@ def show_particle_grid(model):
     plt.colorbar()
 
 
+# gibt zufällige direction als tupel zurück
+def random_direction():
+    # direction ist ein tupel das die richtung in x,y Koordinaten angibt also: (-1, 0), (1, 0), (0, -1), (0, 1)
+    direction = random.choice([(-1, 0), (1, 0), (0, -1), (0, 1)])
+    return direction
+
+
 class AntAgent(mesa.Agent):
 
     def __init__(self, unique_id, s, j, model):
@@ -41,12 +58,6 @@ class AntAgent(mesa.Agent):
         self.particle = None
         self.s = s
         self.j = j
-
-    # gibt zufällige direction zurück
-    def random_direction(self):
-        # direction ist ein tupel das die richtung in x,y Koordinaten angibt also: (-1, 0), (1, 0), (0, -1), (0, 1)
-        direction = random.choice([(-1, 0), (1, 0), (0, -1), (0, 1)])
-        return direction
 
     # geht einen schritt in die gewählte direction mit schrottweite s
     def schritt(self, direction):
@@ -57,7 +68,6 @@ class AntAgent(mesa.Agent):
         # Particle wird mitgenommen falls vorhanden
         if self.particle is True:
             self.model.grid.move_agent(self.particle, new_position)
-
 
     def jump(self, direction):
         for i in range(self.j):
@@ -76,13 +86,12 @@ class AntAgent(mesa.Agent):
 
         if not self.geladen and particle is not None:
             # Attribute setzen
+            particle.aufgehoben = True
             self.particle = particle
             self.geladen = True
-            particle.aufgehoben = True
-
 
             # random direction finden und dann in diese richtung jumpen
-            direction = self.random_direction()
+            direction = random_direction()
             self.jump(direction)
 
         elif self.geladen and particle is not None:
@@ -92,7 +101,7 @@ class AntAgent(mesa.Agent):
             )
             # schauen welcher Spot kein Partikel enthält und beim ersten gefundenen Spot ablegen
             for place in possible_places:
-                # TODO rauslassen : if not any(isinstance(self.model.grid.get_cell_list_contents(place), ParticleAgent))
+                #if not any(isinstance(agent, ParticleAgent) for agent in self.model.grid.get_cell_list_contents(place)):
                 if self.model.grid.is_cell_empty(place):
                     # particle an place ablegen und attribute anpassen
                     self.model.grid.move_agent(self.particle, place)  # Partikel wird hier bei place abgelegt
@@ -100,14 +109,13 @@ class AntAgent(mesa.Agent):
                     self.particle = None
                     self.geladen = False
 
-
                     break
             # random direction finden und dann in diese richtung jumpen auch wenn kein freier platz gefunden wurde, um "gefangen sein" zu vermeiden
-            direction = self.random_direction()
+            direction = random_direction()
             self.jump(direction)
 
         else:
-            direction = self.random_direction()
+            direction = random_direction()
             self.schritt(direction)
 
 
@@ -205,8 +213,6 @@ def batch_run():
 
 
 def first_main():
-
-
     height = 30
     width = 30
     model = AntModel(100, 0.1, 1, 5, height, width, True)
@@ -242,15 +248,20 @@ def first_main():
 
 
 if __name__ == "__main__":
-    #start timer
+    # start timer
     start_time = time.time()
 
     height = 20
     width = 20
-    model = AntModel(100, 0.5, 1, 5, height, width, True)
 
-    for i in range(1000):
+    model = AntModel(10, 0.1, 1, 3, height, width, False)
+    step_count = 0
+    for i in range(100000):
+        if all_have_x_neighbours(model, 1):
+            print("clusters have been made, afer " + str(step_count) + " steps!")
+            break
         model.step()
+        step_count += 1
 
     particle_neighbours = model.datacollector.get_model_vars_dataframe()
     particle_neighbours.plot()
@@ -265,6 +276,3 @@ if __name__ == "__main__":
 
     # nach dem timer erst weil plt.show blockierend wirkt
     plt.show()
-
-
-
