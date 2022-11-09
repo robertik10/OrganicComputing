@@ -1,3 +1,5 @@
+import time
+
 import mesa
 import random
 
@@ -5,14 +7,30 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-def count_particle_neighbours():
-    #TODO coc
-    '''particle_neighbours = [agent.neighbours for agent in model.schedule.agents]
-    x = filter(lambda instance: isinstance(instance, ParticleAgent) ,sorted(particle_neighbours))
 
-    print(x)
-    return x'''
-    return
+# rechnet die durchscnittliche Partikel Nachbarszahl von allen vorhandenen Partikeln aus
+def average_particle_neighbours(model):
+    # generating list with only particle neighbours
+    particle_neighbours = [agent.neighbours for agent in model.schedule.agents if isinstance(agent, ParticleAgent)]
+
+    average = sum(particle_neighbours) / len(particle_neighbours)
+
+    return average
+
+
+# zeigt ein Schaubild mit allen platzierten Partikeln
+# !!unbedingt plt.show() nachher schreiben zum anzeigen!!
+def show_particle_grid(model):
+    agent_counts = np.zeros((model.grid.width, model.grid.height))
+    for cell in model.grid.coord_iter():
+        cell_content, x, y = cell
+        filtered_cell_content = [x for x in cell_content if
+                                 isinstance(x, ParticleAgent)]  # filtering out all the ants in the data
+        agent_count = len(filtered_cell_content)
+        agent_counts[x][y] = agent_count
+
+    plt.imshow(agent_counts, interpolation="nearest")
+    plt.colorbar()
 
 
 class AntAgent(mesa.Agent):
@@ -40,8 +58,6 @@ class AntAgent(mesa.Agent):
         if self.particle is True:
             self.model.grid.move_agent(self.particle, new_position)
 
-        print(self.pos)
-
 
     def jump(self, direction):
         for i in range(self.j):
@@ -64,7 +80,6 @@ class AntAgent(mesa.Agent):
             self.geladen = True
             particle.aufgehoben = True
 
-            print("servus i bims Ameise " + str(self.unique_id)  + " und hab was aufgehoben hihi")
 
             # random direction finden und dann in diese richtung jumpen
             direction = self.random_direction()
@@ -80,13 +95,10 @@ class AntAgent(mesa.Agent):
                 # TODO rauslassen : if not any(isinstance(self.model.grid.get_cell_list_contents(place), ParticleAgent))
                 if self.model.grid.is_cell_empty(place):
                     # particle an place ablegen und attribute anpassen
-                    self.model.grid.move_agent(self.particle, place) # Partikel wird hier bei place abgelegt
+                    self.model.grid.move_agent(self.particle, place)  # Partikel wird hier bei place abgelegt
                     self.particle.aufgehoben = False
                     self.particle = None
                     self.geladen = False
-
-
-                    print("servus i bims Ameise " + str(self.unique_id) + " hab was abgelegt :(")
 
 
                     break
@@ -107,16 +119,22 @@ class ParticleAgent(mesa.Agent):
         self.aufgehoben = False
         self.neighbours = 0
 
+    # nach jedem step wird geschaut, wie viele benachbarte partikel man selbst hat, um das Clusteringverhalten zu beobacheten
     def step(self):
-        # nach benachbartem Partikel suchen,um Custering Verhalten zu beobachten
+        # nach benachbarten Partikel suchen,um Custering Verhalten zu beobachten
         neighbours = self.model.grid.get_neighborhood(
             self.pos, moore=True, include_center=False
         )
+        # schauen was auf den Nachbarsplätzen liegt
+        neighbours_content = self.model.grid.get_cell_list_contents(neighbours)
+
+        # nur Zellen mit Partikeln rausfiltern
+        filtered_content = [agent for agent in neighbours_content if isinstance(agent, ParticleAgent)]
+
         # zählen wie viele partikel an uns angrenzen
         count = 0
-        for place in neighbours:
-            if not isinstance(self.model.grid.get_cell_list_contents(place), ParticleAgent):
-                count += 1
+        for place in filtered_content:
+            count += 1
 
         self.neighbours = count
         return
@@ -149,27 +167,28 @@ class AntModel(mesa.Model):
             self.grid.place_agent(a, (x, y))
 
         # Add the particles to grid
-        k = N + 1 #unique_identifier counter for particles
+        k = N + 1  # unique_identifier counter for particles
         for i in range(height):
             for j in range(width):
                 # test if particle should be placed based on density parameter
                 if random.random() < density:
-                    a = ParticleAgent(k, self) #k to ensure unique id for all agents
+                    a = ParticleAgent(k, self)  # k to ensure unique id for all agents
                     self.schedule.add(a)
                     # Add the Ant to a grid cell
                     self.grid.place_agent(a, (i, j))
-                    k += 1  #increase unique identifier
-        #TODO
-        """self.datacollector = mesa.DataCollector(
-            model_reporters={"particle_neighbours":count_particle_neighbours}
-        )"""
+                    k += 1  # increase unique identifier
+
+        self.datacollector = mesa.DataCollector(
+            model_reporters={"particle_neighbours": average_particle_neighbours}
+        )
 
     def step(self):
-        #TODO self.datacollector.collect(self)
+        self.datacollector.collect(self)
         self.schedule.step()
 
+
 def batch_run():
-    params = {"N": 10, "density":0.1, "s":1, "j":3, "height": 10, "width": 10, "middleInit": (True, False)}
+    params = {"N": 10, "density": 0.1, "s": 1, "j": 3, "height": 10, "width": 10, "middleInit": (True, False)}
 
     results = mesa.batch_run(
         AntModel,
@@ -185,8 +204,9 @@ def batch_run():
     print(results_df.keys())
 
 
+def first_main():
 
-def firt_main():
+
     height = 30
     width = 30
     model = AntModel(100, 0.1, 1, 5, height, width, True)
@@ -202,32 +222,49 @@ def firt_main():
     # necessary to show plot
     plt.show()
 
-    for i in range(50000):
+    for i in range(1000):
         model.step()
 
     agent_counts = np.zeros((model.grid.width, model.grid.height))
     for cell in model.grid.coord_iter():
         cell_content, x, y = cell
-        agent_count = len(cell_content)
+        filtered_cell_content = [x for x in cell_content if
+                                 isinstance(x, ParticleAgent)]  # filtering out all the ants in the data
+
+        agent_count = len(filtered_cell_content)
         agent_counts[x][y] = agent_count
 
     plt.imshow(agent_counts, interpolation="nearest")
     plt.colorbar()
     # necessary to show plot
     plt.show()
+    print("finished!")
+
 
 if __name__ == "__main__":
-    height = 30
-    width = 30
-    model = AntModel(10, 0.1, 1, 5, height, width, True)
+    #start timer
+    start_time = time.time()
 
-    for i in range(5000):
+    height = 20
+    width = 20
+    model = AntModel(100, 0.5, 1, 5, height, width, True)
+
+    for i in range(1000):
         model.step()
-    #todo
-    #particle_neighbours = model.datacollector.get_model_vars_dataframe()
-    #particle_neighbours.plot()
 
-    """end_neighbours = particle_neighbours.xs(99, level="Step")["Wealth"]
-    end_neighbours.hist(bins=range(particle_neighbours.neighbours.max() + 1))"""
+    particle_neighbours = model.datacollector.get_model_vars_dataframe()
+    particle_neighbours.plot()
+
+    plt.figure()
+
+    show_particle_grid(model)
+
+    # end timer
+    end_time = time.time()
+    print("finished in " + str(end_time - start_time) + "s!")
+
+    # nach dem timer erst weil plt.show blockierend wirkt
     plt.show()
+
+
 
