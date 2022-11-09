@@ -152,12 +152,15 @@ class AntModel(mesa.Model):
     """A model with some number of agents."""
 
     # middleInit is boolean value
-    def __init__(self, N, density, s, j, height, width, middleInit):
+    #cluster_cond ist ein integer und die Bedingung zum abbrechen der steps. (bei cluster_cond anzahl an partikel nachbarn solls aufhören)
+    def __init__(self, N, density, s, j, height, width, middleInit, cluster_cond):
 
         self.num_ants = N
         self.grid = mesa.space.MultiGrid(height, width, True)
         self.schedule = mesa.time.RandomActivation(self)
         self.running = True
+        self.cluster_cond = cluster_cond
+        self.average_particle_neighbours = 0
 
         # Create agents
         for i in range(self.num_ants):
@@ -193,58 +196,33 @@ class AntModel(mesa.Model):
     def step(self):
         self.datacollector.collect(self)
         self.schedule.step()
+        if all_have_x_neighbours(self, self.cluster_cond):
+            print("clusters have been made, afer " + '''str(step_count)''' + " steps!")
+            self.average_particle_neighbours = average_particle_neighbours(self)
+            self.running = False
 
 
+#hat leider nicht so funktioniert wie gewollt
 def batch_run():
-    params = {"N": 10, "density": 0.1, "s": 1, "j": 3, "height": 10, "width": 10, "middleInit": (True, False)}
+    params = {"N": 10, "density": 0.1, "s": range(1,6,1), "j": 3, "height": 20, "width": 20, "middleInit": True, "cluster_cond":1}
 
     results = mesa.batch_run(
         AntModel,
         parameters=params,
-        iterations=2,
-        max_steps=1000,
+        iterations=5,
+        max_steps=100000,
         number_processes=1,
-        data_collection_period=1,
+        data_collection_period=-1,
         display_progress=True
     )
 
     results_df = pd.DataFrame(results)
     print(results_df.keys())
 
-
-def first_main():
-    height = 30
-    width = 30
-    model = AntModel(100, 0.1, 1, 5, height, width, True)
-
-    agent_counts = np.zeros((model.grid.width, model.grid.height))
-    for cell in model.grid.coord_iter():
-        cell_content, x, y = cell
-        agent_count = len(cell_content)
-        agent_counts[x][y] = agent_count
-
-    plt.imshow(agent_counts, interpolation="nearest")
-    plt.colorbar()
-    # necessary to show plot
+    s_values = results_df.s.values
+    average_values = results_df.particle_neighbours.values
+    plt.scatter(s_values, average_values)
     plt.show()
-
-    for i in range(1000):
-        model.step()
-
-    agent_counts = np.zeros((model.grid.width, model.grid.height))
-    for cell in model.grid.coord_iter():
-        cell_content, x, y = cell
-        filtered_cell_content = [x for x in cell_content if
-                                 isinstance(x, ParticleAgent)]  # filtering out all the ants in the data
-
-        agent_count = len(filtered_cell_content)
-        agent_counts[x][y] = agent_count
-
-    plt.imshow(agent_counts, interpolation="nearest")
-    plt.colorbar()
-    # necessary to show plot
-    plt.show()
-    print("finished!")
 
 
 if __name__ == "__main__":
@@ -253,11 +231,12 @@ if __name__ == "__main__":
 
     height = 20
     width = 20
+    cluster_cond = 2
 
-    model = AntModel(10, 0.1, 1, 3, height, width, False)
+    model = AntModel(10, 0.1, 1, 3, height, width, True, cluster_cond)
     step_count = 0
     for i in range(100000):
-        if all_have_x_neighbours(model, 1):
+        if all_have_x_neighbours(model, cluster_cond):
             print("clusters have been made, afer " + str(step_count) + " steps!")
             break
         model.step()
@@ -276,3 +255,4 @@ if __name__ == "__main__":
 
     # nach dem timer erst weil plt.show blockierend wirkt
     plt.show()
+    #batch_run()
