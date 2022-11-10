@@ -60,10 +60,10 @@ def neighborhood(i):
     sigma = 9
     L = []
     values = []
-    neighbors = model.grid.get_neighborhood(
+    neighbors = i.model.grid.get_neighborhood(
         i.pos, moore=True, include_center=False)
     for neighbor in neighbors:
-        cell_content = model.grid.get_cell_list_contents([neighbor])
+        cell_content = i.model.grid.get_cell_list_contents([neighbor])
         for x in cell_content:
             if isinstance(x, ParticleAgent) and x.aufgehoben is False:
                 L.append(x)
