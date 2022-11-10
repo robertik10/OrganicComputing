@@ -49,46 +49,45 @@ def random_direction():
     direction = random.choice([(-1, 0), (1, 0), (0, -1), (0, 1)])
     return direction
 
+
 def getDistance(particle1, particle2):
     distance = 0 if (particle1.type == particle2.type) else 1
     return distance
 
+
 def neighborhood(i):
-    alpha = 0.5
-    sigma = 25
+    alpha = 0.01
+    sigma = 9
     L = []
     values = []
     neighbors = model.grid.get_neighborhood(
         i.pos, moore=True, include_center=False)
     for neighbor in neighbors:
-        cell_content = model.grid.get_cell_list_contents([neighbor])   
+        cell_content = model.grid.get_cell_list_contents([neighbor])
         for x in cell_content:
             if isinstance(x, ParticleAgent) and x.aufgehoben is False:
-                print("Particle gefunden:" + str(x.pos))
                 L.append(x)
-                print("L: " + str(L))
                 break
-    print("L" + str(L))
     for j in L:
-        print("j: " + str(j))
-        value = 1 - (getDistance(i,j) // alpha)
+        value = 1 - (getDistance(i, j) / alpha)
         if value > 0:
             values.append(value)
-        else: 
+        else:
             return 0
-    result = (1/sigma) * np.sum(values)
-    print("result: " + str(result))
+    result = (1 / sigma) * np.sum(values)
     return result
 
+
 def pickupChance(i):
-    result = (0.1 // (0.1 + neighborhood(i))) ** 2
+    result = (0.1 / (0.1 + neighborhood(i))) ** 2
     return result
+
 
 def dropChance(i):
     f = neighborhood(i)
-    result = (f // (0.3 + f)) ** 2
+    result = (f / (0.3 + f)) ** 2
     return result
-    
+
 
 class AntAgent(mesa.Agent):
 
@@ -98,8 +97,7 @@ class AntAgent(mesa.Agent):
         self.particle = particle
         self.s = s
         self.j = j
-        print("Agent erstellt mit Particle" + str(self.particle.pos))
-
+        print("Agent erstellt mit " + str(self.particle.type) + str(self.particle.pos))
 
     # geht einen schritt in die gewählte direction mit schrittweite s
     def schritt(self, direction):
@@ -118,7 +116,6 @@ class AntAgent(mesa.Agent):
     def step(self):
         direction = random_direction()
         self.jump(direction)
-        print("Gelaufen zu " + str(self.pos))
         drop = dropChance(self.particle)
         if random.random() < drop:
             # nach stelle für objekt suchen
@@ -127,18 +124,19 @@ class AntAgent(mesa.Agent):
             )
             # schauen welcher Spot kein Partikel enthält und beim ersten gefundenen Spot ablegen
             for place in possible_places:
-                #if not any(isinstance(agent, ParticleAgent) for agent in self.model.grid.get_cell_list_contents(place)):
+                # if not any(isinstance(agent, ParticleAgent) for agent in self.model.grid.get_cell_list_contents(place)):
                 if self.model.grid.is_cell_empty(place):
                     # particle an place ablegen und attribute anpassen
+                    print(str(self.particle.type) + " abgelegt auf " + str(place) + str(drop))
                     self.model.grid.move_agent(self.particle, place)  # Partikel wird hier bei place abgelegt
                     self.particle.aufgehoben = False
                     self.particle = None
                     self.geladen = False
-                    print("Particle abgelegt")
 
                     break
-        
-            allParticles = [agent for agent in self.model.schedule.agents if (isinstance(agent, ParticleAgent) and agent.aufgehoben is False)]
+
+            allParticles = [agent for agent in self.model.schedule.agents if
+                            (isinstance(agent, ParticleAgent) and agent.aufgehoben is False)]
             while self.geladen is False:
                 particle = random.choice(allParticles)
                 pick = pickupChance(particle)
@@ -146,8 +144,7 @@ class AntAgent(mesa.Agent):
                     self.particle = particle
                     particle.aufgehoben = True
                     self.geladen = True
-                    print("Particle aufgehoben")
-
+                    print("Particle aufgehoben auf " + str(self.pos) + str(pick))
 
 
 class ParticleAgent(mesa.Agent):
@@ -184,7 +181,7 @@ class AntModel(mesa.Model):
     """A model with some number of agents."""
 
     # middleInit is boolean value
-    #cluster_cond ist ein integer und die Bedingung zum abbrechen der steps. (bei cluster_cond anzahl an partikel nachbarn solls aufhören)
+    # cluster_cond ist ein integer und die Bedingung zum abbrechen der steps. (bei cluster_cond anzahl an partikel nachbarn solls aufhören)
     def __init__(self, N, density, s, j, height, width, middleInit, cluster_cond):
 
         self.num_ants = N
@@ -216,7 +213,7 @@ class AntModel(mesa.Model):
             # select random particle and pick it up
             particle = random.choice(allParticles)
             allParticles.remove(particle)
-            
+
             a = AntAgent(i, s, j, particle, self)
             self.schedule.add(a)
 
@@ -229,7 +226,6 @@ class AntModel(mesa.Model):
                 x = self.random.randrange(self.grid.width)
                 y = self.random.randrange(self.grid.height)
             self.grid.place_agent(a, (x, y))
-            
 
     def step(self):
         self.datacollector.collect(self)
@@ -239,6 +235,7 @@ class AntModel(mesa.Model):
             self.average_particle_neighbours = average_particle_neighbours(self)
             self.running = False
 
+
 if __name__ == "__main__":
     # start timer
     start_time = time.time()
@@ -247,9 +244,9 @@ if __name__ == "__main__":
     width = 10
     cluster_cond = 2
 
-    model = AntModel(1, 0.2, 1, 3, height, width, True, cluster_cond)
+    model = AntModel(5, 0.2, 1, 3, height, width, True, cluster_cond)
     step_count = 0
-    for i in range(100):
+    for i in range(10000):
         if all_have_x_neighbours(model, cluster_cond):
             print("clusters have been made, after " + str(step_count) + " steps!")
             break
@@ -269,4 +266,4 @@ if __name__ == "__main__":
 
     # nach dem timer erst weil plt.show blockierend wirkt
     plt.show()
-    #batch_run()
+    # batch_run()

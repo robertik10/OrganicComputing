@@ -233,7 +233,7 @@ if __name__ == "__main__":
     width = 20
     cluster_cond = 2
 
-    model = AntModel(10, 0.1, 1, 3, height, width, True, cluster_cond)
+    model = AntModel(1, 0.1, 1, 3, height, width, True, cluster_cond)
     step_count = 0
     for i in range(100000):
         if all_have_x_neighbours(model, cluster_cond):
@@ -253,6 +253,6 @@ if __name__ == "__main__":
     end_time = time.time()
     print("finished in " + str(end_time - start_time) + "s!")
 
-    # nach dem timer erst weil plt.show blockierend wirkt
+    # nach dem timer erst, weil plt.show blockierend wirkt
     plt.show()
     #batch_run()
