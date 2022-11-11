@@ -12,7 +12,7 @@ def agent_portrayal(agent):
 
     if isinstance(agent, ParticleAgent) and agent.type == "Nuss":
         portrayal["Color"] = "brown"
-        portrayal["Layer"] = 0
+        portrayal["Layer"] = 1
     elif isinstance(agent, ParticleAgent) and agent.type == "Blatt":
         portrayal["Color"] = "green"
         portrayal["Layer"] = 1
@@ -23,7 +23,7 @@ def agent_portrayal(agent):
         #portrayal["r"] = 0.2
     else:
         portrayal["Color"] = "black"
-        portrayal["Layer"] = 1
+        portrayal["Layer"] = 2
         portrayal["r"] = 0.2
 
     return portrayal
@@ -35,12 +35,12 @@ if __name__ == "__main__":
     grid = mesa.visualization.CanvasGrid(agent_portrayal, 10, 10, 500, 500)
     server = mesa.visualization.ModularServer(
         AntModel, [grid], "Ant Model",
-        {"N": 1, "density": 0.3, "s": 1, "j": 3, "width": 10, "height": 10, "middleInit": True, "cluster_cond": 3}
+        {"N": 1, "density": 0.1, "s": 1, "j": 3, "width": 5, "height": 5, "middleInit": False, "cluster_cond": 3}
     )
     server = ModularServer(AntModel,
                            [grid],
                            "And Model",
-                           {"N": 1, "density": 0.3, "s": 1, "j": 3, "width": 10, "height": 10, "middleInit": True,
+                           {"N": 1, "density": 0.1, "s": 1, "j": 3, "width": 5, "height": 5, "middleInit": False,
                             "cluster_cond": 3})
     server.port = 8521  # The default
     server.launch()

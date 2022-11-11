@@ -63,7 +63,7 @@ def neighborhood(i):
     L = []
     values = []
     neighbors = i.model.grid.get_neighborhood(
-        i.pos, moore=True, include_center=False)
+        i.pos, moore=True, include_center=True) #TODO ich glaub center muss included sein
     for neighbor in neighbors:
         cell_content = i.model.grid.get_cell_list_contents([neighbor])
         for x in cell_content:
@@ -72,10 +72,10 @@ def neighborhood(i):
                 break
     for j in L:
         value = 1 - (getDistance(i, j) / alpha)
-        if value > 0:
-            values.append(value)
-        else:
-            return 0
+        #if value > 0:
+        values.append(value)
+        #else:
+        #    return 0
     result = (1 / sigma**2) * np.sum(values)
     return result
 
@@ -88,6 +88,7 @@ def pickupChance(i):
 def dropChance(i):
     f = neighborhood(i)
     result = (f / (0.3 + f)) ** 2
+    print("Dropchance = " + str(result))
     return result
 
 
@@ -108,7 +109,7 @@ class AntAgent(mesa.Agent):
 
         self.model.grid.move_agent(self, new_position)
         # Particle wird mitgenommen falls vorhanden
-        if self.particle is True:
+        if self.particle is not None:
             self.model.grid.move_agent(self.particle, new_position)
 
     def jump(self, direction):
@@ -118,37 +119,51 @@ class AntAgent(mesa.Agent):
     def step(self):
         direction = random_direction()
         self.jump(direction)
-        drop = dropChance(self.particle)
 
-        if random.random() < drop:
-            # nach stelle für objekt suchen
-            possible_places = self.model.grid.get_neighborhood(
-                self.pos, moore=True, include_center=True
+        # wenn partikel in der Hand und man auf einem Partikel landet dann wird nach stelle zum ablegen gesucht
+        if self.particle is not None:
+            drop = dropChance(self.particle)
+            if random.random() < drop:
+                # nach stelle für objekt suchen
+                possible_places = self.model.grid.get_neighborhood(
+                    self.pos, moore=True, include_center=True
+                )
+                # schauen welcher Spot kein Partikel enthält und beim ersten gefundenen Spot ablegen
+                for place in possible_places:
+                    # if not any(isinstance(agent, ParticleAgent) for agent in self.model.grid.get_cell_list_contents(place)):
+                    if self.model.grid.is_cell_empty(place):
+                        # particle an place ablegen und attribute anpassen
+                        print(str(self.particle.type) + " abgelegt auf " + str(place) + str(drop))
+                        self.model.grid.move_agent(self.particle, place)  # Partikel wird hier bei place abgelegt
+                        self.particle.aufgehoben = False
+                        self.particle = None
+                        self.geladen = False
+
+                        break
+        # alle Objekte in der Nähe anschauen und überlegen, ob aufheben notwendig
+        else:
+
+            #allParticles = [agent for agent in self.model.schedule.agents if
+            #               (isinstance(agent, ParticleAgent) and agent.aufgehoben is False)]
+            #particle = random.choice(allParticles)  #damit nur einmal ein partikel gewählt wird
+            #while self.geladen is False:
+
+
+            neighbours = self.model.grid.get_neighborhood(
+                self.pos, moore=True, include_center=False
             )
-            # schauen welcher Spot kein Partikel enthält und beim ersten gefundenen Spot ablegen
-            for place in possible_places:
-                # if not any(isinstance(agent, ParticleAgent) for agent in self.model.grid.get_cell_list_contents(place)):
-                if self.model.grid.is_cell_empty(place):
-                    # particle an place ablegen und attribute anpassen
-                    print(str(self.particle.type) + " abgelegt auf " + str(place) + str(drop))
-                    self.model.grid.move_agent(self.particle, place)  # Partikel wird hier bei place abgelegt
-                    self.particle.aufgehoben = False
-                    self.particle = None
-                    self.geladen = False
-
-                    break
-
-            allParticles = [agent for agent in self.model.schedule.agents if
-                            (isinstance(agent, ParticleAgent) and agent.aufgehoben is False)]
-            particle = random.choice(allParticles)  #damit nur einmal ein partikel gewählt wird
-            while self.geladen is False:
-
+            # schauen was auf den Nachbarsplätzen liegt
+            neighbours_content = self.model.grid.get_cell_list_contents(neighbours)
+            # nur Zellen mit Partikeln rausfiltern
+            filtered_content = [agent for agent in neighbours_content if isinstance(agent, ParticleAgent)]
+            for particle in filtered_content:
                 pick = pickupChance(particle)
                 if random.random() < pick:
                     self.particle = particle
                     particle.aufgehoben = True
                     self.geladen = True
                     print("Particle aufgehoben auf " + str(self.pos) + str(pick))
+                    break
 
 
 class ParticleAgent(mesa.Agent):
@@ -217,7 +232,7 @@ class AntModel(mesa.Model):
             # select random particle and pick it up
             particle = random.choice(allParticles)
             allParticles.remove(particle)
-            print("!!!!!!!!" + str(particle))
+            print("!!!!!!!!" + str(particle.type))
 
             a = AntAgent(i, s, j, particle, self)
             self.schedule.add(a)
@@ -248,11 +263,11 @@ if __name__ == "__main__":
     # start timer
     start_time = time.time()
 
-    height = 10
-    width = 10
-    cluster_cond = 2
+    height = 5
+    width = 5
+    cluster_cond = 1
 
-    model = AntModel(1, 0.2, 1, 3, height, width, True, cluster_cond)
+    model = AntModel(1, 0.1, 1, 3, height, width, True, cluster_cond)
     step_count = 0
     for i in range(10000):
         if all_have_x_neighbours(model, cluster_cond):
