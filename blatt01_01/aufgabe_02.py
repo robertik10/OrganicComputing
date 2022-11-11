@@ -52,12 +52,14 @@ def random_direction():
 
 def getDistance(particle1, particle2):
     distance = 0 if (particle1.type == particle2.type) else 1
+    print("partikel1 =" + str(particle1.type) + ", partikel2 = " + str(particle2.type) + "Distance is " + str(distance))
     return distance
 
 
 def neighborhood(i):
     alpha = 0.01
-    sigma = 9
+    #TODO Wichtig sigma^2 = 9 oder 25!!! also sigma ist 3 oder 5
+    sigma = 3
     L = []
     values = []
     neighbors = i.model.grid.get_neighborhood(
@@ -74,7 +76,7 @@ def neighborhood(i):
             values.append(value)
         else:
             return 0
-    result = (1 / sigma) * np.sum(values)
+    result = (1 / sigma**2) * np.sum(values)
     return result
 
 
@@ -117,6 +119,7 @@ class AntAgent(mesa.Agent):
         direction = random_direction()
         self.jump(direction)
         drop = dropChance(self.particle)
+
         if random.random() < drop:
             # nach stelle für objekt suchen
             possible_places = self.model.grid.get_neighborhood(
@@ -137,8 +140,9 @@ class AntAgent(mesa.Agent):
 
             allParticles = [agent for agent in self.model.schedule.agents if
                             (isinstance(agent, ParticleAgent) and agent.aufgehoben is False)]
+            particle = random.choice(allParticles)  #damit nur einmal ein partikel gewählt wird
             while self.geladen is False:
-                particle = random.choice(allParticles)
+
                 pick = pickupChance(particle)
                 if random.random() < pick:
                     self.particle = particle
@@ -207,12 +211,13 @@ class AntModel(mesa.Model):
             model_reporters={"particle_neighbours": average_particle_neighbours}
         )
 
-        allParticles = self.schedule.agents
+        allParticles = self.schedule.agents #weil bisher nur Partikel zur schedule hinzugefügt wurden
         # Create agents
         for i in range(self.num_ants):
             # select random particle and pick it up
             particle = random.choice(allParticles)
             allParticles.remove(particle)
+            print("!!!!!!!!" + str(particle))
 
             a = AntAgent(i, s, j, particle, self)
             self.schedule.add(a)
@@ -225,13 +230,16 @@ class AntModel(mesa.Model):
                 # Add the Ant to a random grid cell
                 x = self.random.randrange(self.grid.width)
                 y = self.random.randrange(self.grid.height)
+            #Partikel und Ameise an gleichen Platz bringen und Attribute von Partikel auf angehoben anpassen
             self.grid.place_agent(a, (x, y))
+            self.grid.place_agent(particle, (x, y))
+            particle.aufgehoben = True
 
     def step(self):
         self.datacollector.collect(self)
         self.schedule.step()
         if all_have_x_neighbours(self, self.cluster_cond):
-            print("clusters have been made, afer " + '''str(step_count)''' + " steps!")
+            print("clusters have been made, after " + '''str(step_count)''' + " steps!")
             self.average_particle_neighbours = average_particle_neighbours(self)
             self.running = False
 
@@ -244,7 +252,7 @@ if __name__ == "__main__":
     width = 10
     cluster_cond = 2
 
-    model = AntModel(5, 0.2, 1, 3, height, width, True, cluster_cond)
+    model = AntModel(1, 0.2, 1, 3, height, width, True, cluster_cond)
     step_count = 0
     for i in range(10000):
         if all_have_x_neighbours(model, cluster_cond):
