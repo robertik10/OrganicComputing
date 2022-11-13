@@ -9,27 +9,31 @@ import pandas as pd
 
 
 # rechnet die durchscnittliche Partikel Nachbarszahl von allen vorhandenen Partikeln aus
-def average_particle_neighbours(model):
-    # generating list with only particle neighbours
-    particle_neighbour_count = [agent.neighbours for agent in model.schedule.agents if isinstance(agent, ParticleAgent)]
+def average_particle_neighbors(model):
+    # generating list with only particle neighbors
+    particle_neighbor_count = [agent.neighbors for agent in model.schedule.agents if isinstance(agent, ParticleAgent)]
 
-    average = sum(particle_neighbour_count) / len(particle_neighbour_count)
+    average = sum(particle_neighbor_count) / len(particle_neighbor_count)
 
     return average
 
 
-# überprüft ob alle Partikel mindestens x Nachbarn haben
-def all_have_x_neighbours(model, x):
-    # generating list with only particle neighbours
-    particle_neighbour_count = [agent.neighbours for agent in model.schedule.agents if isinstance(agent, ParticleAgent)]
-    if any(count < x for count in particle_neighbour_count):
-        return False
-    else:
-        return True
+# überprüft ob alle Partikel mindestens x Nachbarn mit Distanz 0 haben
+def all_have_x_neighbors(model, x):
+    # generating list with only particle neighbors
+    for agent in model.schedule.agents:
+        if isinstance(agent, ParticleAgent) and agent.aufgehoben is False:
+            count = 0
+            for neighbor in model.grid.get_neighbors(agent.pos, moore=True, include_center=False):
+                if isinstance(neighbor, ParticleAgent) and getDistance(agent, neighbor) == 0:
+                    count += 1
+            if count < x:
+                return False
+    return True
 
 
 # zeigt ein Schaubild mit allen platzierten Partikeln
-# !!unbedingt plt.show() nachher schreiben zum anzeigen!!
+# plt.show() nachher schreiben zum anzeigen!!
 def show_particle_grid(model):
     agent_counts = np.zeros((model.grid.width, model.grid.height))
     for cell in model.grid.coord_iter():
@@ -49,21 +53,19 @@ def random_direction():
     direction = random.choice([(-1, 0), (1, 0), (0, -1), (0, 1)])
     return direction
 
-
+# distanz gibt ähnlichkeit zwischen partikeln wider : Partikel sind gleich -> 0 sonst 1
 def getDistance(particle1, particle2):
     distance = 0 if (particle1.type == particle2.type) else 1
-    print("partikel1 =" + str(particle1.type) + ", partikel2 = " + str(particle2.type) + "Distance is " + str(distance))
     return distance
 
-
+# neighborhood funktion aus dem skript
 def neighborhood(i):
-    alpha = 0.01
-    #TODO Wichtig sigma^2 = 9 oder 25!!! also sigma ist 3 oder 5
+    alpha = 0.1
     sigma = 3
     L = []
     values = []
     neighbors = i.model.grid.get_neighborhood(
-        i.pos, moore=True, include_center=True) #TODO ich glaub center muss included sein
+        i.pos, moore=True, include_center=False)
     for neighbor in neighbors:
         cell_content = i.model.grid.get_cell_list_contents([neighbor])
         for x in cell_content:
@@ -72,23 +74,22 @@ def neighborhood(i):
                 break
     for j in L:
         value = 1 - (getDistance(i, j) / alpha)
-        #if value > 0:
-        values.append(value)
-        #else:
-        #    return 0
-    result = (1 / sigma**2) * np.sum(values)
+        if value > 0:
+            values.append(value)
+        else:
+            return 0
+    result = (1 / sigma ** 2) * np.sum(values)
     return result
 
-
+# pickup chance aus dem skript
 def pickupChance(i):
     result = (0.1 / (0.1 + neighborhood(i))) ** 2
     return result
 
-
+# drop chance aus dem skript
 def dropChance(i):
     f = neighborhood(i)
     result = (f / (0.3 + f)) ** 2
-    print("Dropchance = " + str(result))
     return result
 
 
@@ -113,9 +114,10 @@ class AntAgent(mesa.Agent):
             self.model.grid.move_agent(self.particle, new_position)
 
     def jump(self, direction):
-        for i in range(self.j):
+        for _ in range(self.j):
             self.schritt(direction)
 
+    #step methode aus dem Skript ausimplementiert
     def step(self):
         direction = random_direction()
         self.jump(direction)
@@ -124,75 +126,74 @@ class AntAgent(mesa.Agent):
         if self.particle is not None:
             drop = dropChance(self.particle)
             if random.random() < drop:
+                if len(self.model.grid.get_cell_list_contents(self.pos)) <= 2:
+                    self.particle.aufgehoben = False
+                    self.particle = None
+                    self.geladen = False
+                    return
                 # nach stelle für objekt suchen
                 possible_places = self.model.grid.get_neighborhood(
-                    self.pos, moore=True, include_center=True
+                    self.pos, moore=True, include_center=False
                 )
                 # schauen welcher Spot kein Partikel enthält und beim ersten gefundenen Spot ablegen
                 for place in possible_places:
                     # if not any(isinstance(agent, ParticleAgent) for agent in self.model.grid.get_cell_list_contents(place)):
                     if self.model.grid.is_cell_empty(place):
                         # particle an place ablegen und attribute anpassen
-                        print(str(self.particle.type) + " abgelegt auf " + str(place) + str(drop))
                         self.model.grid.move_agent(self.particle, place)  # Partikel wird hier bei place abgelegt
                         self.particle.aufgehoben = False
                         self.particle = None
                         self.geladen = False
 
                         break
-        # alle Objekte in der Nähe anschauen und überlegen, ob aufheben notwendig
+        # alle Partikel durchgehen und mit Wahrscheinlichkeit pick aufheben
         else:
 
-            #allParticles = [agent for agent in self.model.schedule.agents if
-            #               (isinstance(agent, ParticleAgent) and agent.aufgehoben is False)]
-            #particle = random.choice(allParticles)  #damit nur einmal ein partikel gewählt wird
-            #while self.geladen is False:
-
-
-            neighbours = self.model.grid.get_neighborhood(
-                self.pos, moore=True, include_center=False
-            )
-            # schauen was auf den Nachbarsplätzen liegt
-            neighbours_content = self.model.grid.get_cell_list_contents(neighbours)
-            # nur Zellen mit Partikeln rausfiltern
-            filtered_content = [agent for agent in neighbours_content if isinstance(agent, ParticleAgent)]
-            for particle in filtered_content:
+            allParticles = [agent for agent in self.model.schedule.agents if
+                            (isinstance(agent, ParticleAgent) and agent.aufgehoben is False)]
+            for particle in allParticles:
+                self.model.grid.move_agent(self, particle.pos)
                 pick = pickupChance(particle)
                 if random.random() < pick:
                     self.particle = particle
                     particle.aufgehoben = True
                     self.geladen = True
-                    print("Particle aufgehoben auf " + str(self.pos) + str(pick))
                     break
 
 
 class ParticleAgent(mesa.Agent):
     """An agent with fixed initial wealth."""
 
-    def __init__(self, unique_id, model):
+    def __init__(self, unique_id, model, type):
         super().__init__(unique_id, model)
         self.aufgehoben = False
-        self.neighbours = 0
-        self.type = random.choice(["Blatt", "Stein", "Nuss"])
+        self.neighbors = 0
+        if type is not None:
+            self.type = type
+        else:
+            self.type = random.choice(["Blatt", "Stein", "Nuss"])
+        if self.type == "Blatt":
+            global blatt_count
+            blatt_count += 1
+        elif self.type == "Stein":
+            global stein_count
+            stein_count += 1
+        else:
+            global nuss_count
+            nuss_count += 1
 
     # nach jedem step wird geschaut, wie viele benachbarte partikel man selbst hat, um das Clusteringverhalten zu beobacheten
     def step(self):
-        # nach benachbarten Partikel suchen,um Custering Verhalten zu beobachten
-        neighbours = self.model.grid.get_neighborhood(
+        # nach benachbarten Partikel vom selben Typ suchen,um Custering Verhalten zu beobachten
+        neighbors = self.model.grid.get_neighbors(
             self.pos, moore=True, include_center=False
         )
-        # schauen was auf den Nachbarsplätzen liegt
-        neighbours_content = self.model.grid.get_cell_list_contents(neighbours)
 
-        # nur Zellen mit Partikeln rausfiltern
-        filtered_content = [agent for agent in neighbours_content if isinstance(agent, ParticleAgent)]
-
-        # zählen wie viele partikel an uns angrenzen
         count = 0
-        for place in filtered_content:
-            count += 1
-
-        self.neighbours = count
+        for agent in neighbors:
+            if isinstance(agent, ParticleAgent) and getDistance(agent, self) == 0:
+                count += 1
+        self.neighbors = count
         return
 
 
@@ -208,31 +209,37 @@ class AntModel(mesa.Model):
         self.schedule = mesa.time.RandomActivation(self)
         self.running = True
         self.cluster_cond = cluster_cond
-        self.average_particle_neighbours = 0
+        self.average_particle_neighbors = 0
+
+        global stein_count
+        stein_count = 0
+        global blatt_count
+        blatt_count = 0
+        global nuss_count
+        nuss_count = 0
 
         # Add the particles to grid
-        k = N + 1  # unique_identifier counter for particles
+        k = self.num_ants + 1  # unique_identifier counter for particles
         for i in range(height):
             for j in range(width):
                 # test if particle should be placed based on density parameter
                 if random.random() < density:
-                    a = ParticleAgent(k, self)  # k to ensure unique id for all agents
+                    a = ParticleAgent(k, self, None)  # k to ensure unique id for all agents, no specific type
                     self.schedule.add(a)
                     # Add the Ant to a grid cell
                     self.grid.place_agent(a, (i, j))
                     k += 1  # increase unique identifier
 
         self.datacollector = mesa.DataCollector(
-            model_reporters={"particle_neighbours": average_particle_neighbours}
+            model_reporters={"particle_neighbors": average_particle_neighbors}
         )
 
-        allParticles = self.schedule.agents #weil bisher nur Partikel zur schedule hinzugefügt wurden
+        allParticles = self.schedule.agents  # weil bisher nur Partikel zur schedule hinzugefügt wurden
         # Create agents
         for i in range(self.num_ants):
             # select random particle and pick it up
             particle = random.choice(allParticles)
             allParticles.remove(particle)
-            print("!!!!!!!!" + str(particle.type))
 
             a = AntAgent(i, s, j, particle, self)
             self.schedule.add(a)
@@ -245,17 +252,37 @@ class AntModel(mesa.Model):
                 # Add the Ant to a random grid cell
                 x = self.random.randrange(self.grid.width)
                 y = self.random.randrange(self.grid.height)
-            #Partikel und Ameise an gleichen Platz bringen und Attribute von Partikel auf angehoben anpassen
+            # Partikel und Ameise an gleichen Platz bringen und Attribute von Partikel auf angehoben anpassen
             self.grid.place_agent(a, (x, y))
             self.grid.place_agent(particle, (x, y))
             particle.aufgehoben = True
 
+        # Wenn mehr Ameisen als Partikel eines Typs existieren, kann es passieren, dass alle gleichzeitig aufgehoben und nicht mehr abgesetzt werden können
+        print(str(self.num_ants) + "Ameisen")
+        while nuss_count <= self.num_ants + 1:
+            print(str(nuss_count) + "Zu wenig Nüsse")
+            a = ParticleAgent(k, self, "Nuss")
+            self.schedule.add(a)
+            self.grid.place_agent(a, self.grid.find_empty())
+            k += 1
+        while blatt_count <= self.num_ants + 1:
+            print(str(blatt_count) + "Zu wenig Blätter")
+            a = ParticleAgent(k, self, "Blatt")
+            self.schedule.add(a)
+            self.grid.place_agent(a, self.grid.find_empty())
+            k += 1
+        while stein_count <= self.num_ants + 1:
+            print(str(stein_count) + "Zu wenig Steine")
+            a = ParticleAgent(k, self, "Stein")
+            self.schedule.add(a)
+            self.grid.place_agent(a, self.grid.find_empty())
+            k += 1
+
     def step(self):
         self.datacollector.collect(self)
         self.schedule.step()
-        if all_have_x_neighbours(self, self.cluster_cond):
-            print("clusters have been made, after " + '''str(step_count)''' + " steps!")
-            self.average_particle_neighbours = average_particle_neighbours(self)
+        if all_have_x_neighbors(self, self.cluster_cond):
+            self.average_particle_neighbors = average_particle_neighbors(self)
             self.running = False
 
 
@@ -263,21 +290,18 @@ if __name__ == "__main__":
     # start timer
     start_time = time.time()
 
-    height = 5
-    width = 5
-    cluster_cond = 1
+    height = 20
+    width = 20
+    cluster_cond = 2
 
-    model = AntModel(1, 0.1, 1, 3, height, width, True, cluster_cond)
-    step_count = 0
+    model = AntModel(2, 0.1, 1, 3, height, width, True, cluster_cond)
     for i in range(10000):
-        if all_have_x_neighbours(model, cluster_cond):
-            print("clusters have been made, after " + str(step_count) + " steps!")
+        if all_have_x_neighbors(model, cluster_cond):
+            print("clusters have been made, after " + str(i) + " steps!")
             break
         model.step()
-        step_count += 1
-
-    particle_neighbours = model.datacollector.get_model_vars_dataframe()
-    particle_neighbours.plot()
+    particle_neighbors = model.datacollector.get_model_vars_dataframe()
+    particle_neighbors.plot()
 
     plt.figure()
 
@@ -287,6 +311,4 @@ if __name__ == "__main__":
     end_time = time.time()
     print("finished in " + str(end_time - start_time) + "s!")
 
-    # nach dem timer erst weil plt.show blockierend wirkt
     plt.show()
-    # batch_run()
