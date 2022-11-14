@@ -8,6 +8,13 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 
+
+# returns all ants in current schedule as a list
+def get_ants(model):
+    list = model.schedule.agents
+    ant_list = [agent for agent in list if isinstance(agent, AntAgent)]
+    return ant_list
+
 # rechnet die durchscnittliche Partikel Nachbarszahl von allen vorhandenen Partikeln aus
 def average_particle_neighbours(model):
     # generating list with only particle neighbours
@@ -85,6 +92,10 @@ class AntAgent(mesa.Agent):
                 break
 
         if not self.geladen and particle is not None:
+            # wenn finishing_up True ist sollen alle Ameisen ihre Partikel nur noch ablegen können, weil clustering condition erfüllt ist
+            if self.model.finishing_up is True:
+                return
+
             # Attribute setzen
             particle.aufgehoben = True
             self.particle = particle
@@ -161,6 +172,7 @@ class AntModel(mesa.Model):
         self.running = True
         self.cluster_cond = cluster_cond
         self.average_particle_neighbours = 0
+        self.finishing_up = False  # falls die cluster condition erfüllt ist, müssen alle Ameisen ihre Partikel ablegen und dürfen keine weiteren mehr aufheben
 
         # Create agents
         for i in range(self.num_ants):
@@ -195,11 +207,20 @@ class AntModel(mesa.Model):
 
     def step(self):
         self.datacollector.collect(self)
-        self.schedule.step()
-        if all_have_x_neighbours(self, self.cluster_cond):
-            print("clusters have been made, afer " + '''str(step_count)''' + " steps!")
-            self.average_particle_neighbours = average_particle_neighbours(self)
-            self.running = False
+
+        if self.finishing_up is False:
+            self.schedule.step()
+            if all_have_x_neighbours(self, self.cluster_cond):
+                self.finishing_up = True
+        else:
+            # finshing_up = true -> clustering condition ist erfüllt worden
+            # alle ameisen sollen jetzt ihr partikel ablegen falls noch nicht geschehen
+            ants = get_ants(self)
+            if any(agent.geladen for agent in ants):
+                self.schedule.step()
+            else:
+                self.average_particle_neighbours = average_particle_neighbours(self)
+                self.running = False
 
 
 #hat leider nicht so funktioniert wie gewollt
@@ -253,6 +274,6 @@ if __name__ == "__main__":
     end_time = time.time()
     print("finished in " + str(end_time - start_time) + "s!")
 
-    # nach dem timer erst, weil plt.show blockierend wirkt
+    # nach dem timer erst weil plt.show blockierend wirkt
     plt.show()
     #batch_run()
