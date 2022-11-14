@@ -7,6 +7,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
+# returns all ants in current schedule as a list
+def get_ants(model):
+    list = model.schedule.agents
+    ant_list = [agent for agent in list if isinstance(agent, AntAgent)]
+    return ant_list
 
 # rechnet die durchscnittliche Partikel Nachbarszahl von allen vorhandenen Partikeln aus
 def average_particle_neighbors(model):
@@ -101,6 +106,7 @@ class AntAgent(mesa.Agent):
         self.particle = particle
         self.s = s
         self.j = j
+
         print("Agent erstellt mit " + str(self.particle.type) + str(self.particle.pos))
 
     # geht einen schritt in die gewählte direction mit schrittweite s
@@ -123,6 +129,7 @@ class AntAgent(mesa.Agent):
         self.jump(direction)
 
         # wenn partikel in der Hand und man auf einem Partikel landet dann wird nach stelle zum ablegen gesucht
+
         if self.particle is not None:
             drop = dropChance(self.particle)
             if random.random() < drop:
@@ -148,6 +155,9 @@ class AntAgent(mesa.Agent):
                         break
         # alle Partikel durchgehen und mit Wahrscheinlichkeit pick aufheben
         else:
+            # wenn finishing_up True ist sollen alle Ameisen ihre Partikel nur noch ablegen können, weil clustering condition erfüllt ist
+            if self.model.finishing_up is True:
+                return
 
             allParticles = [agent for agent in self.model.schedule.agents if
                             (isinstance(agent, ParticleAgent) and agent.aufgehoben is False)]
@@ -210,6 +220,7 @@ class AntModel(mesa.Model):
         self.running = True
         self.cluster_cond = cluster_cond
         self.average_particle_neighbors = 0
+        self.finishing_up = False   #falls die cluster condition erfüllt ist, müssen alle Ameisen ihre Partikel ablegen und dürfen keine weiteren mehr aufheben
 
         global stein_count
         stein_count = 0
@@ -280,10 +291,23 @@ class AntModel(mesa.Model):
 
     def step(self):
         self.datacollector.collect(self)
-        self.schedule.step()
-        if all_have_x_neighbors(self, self.cluster_cond):
-            self.average_particle_neighbors = average_particle_neighbors(self)
-            self.running = False
+
+        if self.finishing_up is False:
+            self.schedule.step()
+            if all_have_x_neighbors(self, self.cluster_cond):
+                self.finishing_up = True
+        else:
+            # finshing_up = true -> clustering condition ist erfüllt worden
+            # alle ameisen sollen jetzt ihr partikel ablegen falls noch nicht geschehen
+            ants = get_ants(self)
+            if any(agent.geladen for agent in ants):
+                self.schedule.step()
+            else:
+                self.average_particle_neighbors = average_particle_neighbors(self)
+                self.running = False
+
+
+
 
 
 if __name__ == "__main__":
