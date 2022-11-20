@@ -1,5 +1,5 @@
 import time
-
+import math
 import mesa
 import random
 
@@ -98,6 +98,65 @@ def dropChance(i):
     return result
 
 
+# calculate entropies of given attribute
+def entropy_particle_x(particles):
+    len = len(particles)
+    count = [len]
+    entropy = 0
+
+    for particle in particles:
+        # TODO schauen ob Spielfeld bei von 0 bis 49 geht oder 1 bis 50
+        x = particle.pos[0]
+        count[x] += 1
+    for i in count:
+        p = count[x]/ len
+        entropy += p * math.log(p, 2)
+
+    return entropy * -1
+
+def entropy_particle_y(particles):
+    len = len(particles)
+    count = [len]
+    entropy = 0
+
+    for particle in particles:
+        # TODO schauen ob Spielfeld bei von 0 bis 49 geht oder 1 bis 50
+        x = particle.pos[1]
+        count[x] += 1
+    for i in count:
+        p = count[x] / len
+        entropy += p * math.log(p, 2)
+
+    return entropy * -1
+    return
+
+# TODO bsiher nur copy paste von den anderen 2 funktionen
+def entropy_particle_neighbors(particles):
+    len = len(particles)
+    count = [len]
+    entropy = 0
+
+    for particle in particles:
+        # TODO schauen ob Spielfeld bei von 0 bis 49 geht oder 1 bis 50
+        x = particle.pos[0]
+        count[x] += 1
+    for i in count:
+        p = count[x] / len
+        entropy += p * math.log(p, 2)
+
+    return entropy * -1
+    return
+
+def entropy_ant_x(ants):
+
+    return
+def entropy_ant_y(ants):
+    return
+
+def entropy_ant_hold(ants):
+    return
+
+
 class AntAgent(mesa.Agent):
 
     def __init__(self, unique_id, s, j, particle, model):
@@ -106,6 +165,11 @@ class AntAgent(mesa.Agent):
         self.particle = particle
         self.s = s
         self.j = j
+
+
+        # Systemattribute
+
+
 
         print("Agent erstellt mit " + str(self.particle.type) + str(self.particle.pos))
 
@@ -177,7 +241,12 @@ class ParticleAgent(mesa.Agent):
     def __init__(self, unique_id, model, type):
         super().__init__(unique_id, model)
         self.aufgehoben = False
+        #Systemattribute
         self.neighbors = 0
+        self.x = None
+        self.y = None
+
+
         if type is not None:
             self.type = type
         else:
@@ -204,6 +273,11 @@ class ParticleAgent(mesa.Agent):
             if isinstance(agent, ParticleAgent) and getDistance(agent, self) == 0:
                 count += 1
         self.neighbors = count
+
+        #set systemattributes for x and y
+        self.x = self.pos[0]
+        self.y = self.pos[1]
+
         return
 
 
@@ -314,11 +388,12 @@ if __name__ == "__main__":
     # start timer
     start_time = time.time()
 
-    height = 20
-    width = 20
-    cluster_cond = 2
+    height = 50
+    width = 50
+    N = 50
+    cluster_cond = 3
 
-    model = AntModel(2, 0.1, 1, 3, height, width, True, cluster_cond)
+    model = AntModel(N, 0.1, 1, 3, height, width, True, cluster_cond)
     for i in range(10000):
         if all_have_x_neighbors(model, cluster_cond):
             print("clusters have been made, after " + str(i) + " steps!")

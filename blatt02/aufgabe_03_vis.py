@@ -30,17 +30,22 @@ def agent_portrayal(agent):
 
 if __name__ == "__main__":
 
+    width = 50
+    hight = 50
+    N = 50
+    s = 2
+    j = 5
 
 
-    grid = mesa.visualization.CanvasGrid(agent_portrayal, 15, 15, 500, 500)
+    grid = mesa.visualization.CanvasGrid(agent_portrayal, width, hight, 1000, 1000)
     server = mesa.visualization.ModularServer(
         AntModel, [grid], "Ant Model",
-        {"N": 10, "density": 0.1, "s": 1, "j": 3, "width": 15, "height": 15, "middleInit": False, "cluster_cond": 2}
+        {"N": N, "density": 0.1, "s": s, "j": j, "width": width, "height": hight, "middleInit": False, "cluster_cond": 3}
     )
     server = ModularServer(AntModel,
                            [grid],
                            "And Model",
-                           {"N": 10, "density": 0.1, "s": 1, "j": 3, "width": 15, "height": 15, "middleInit": False,
+                           {"N": N, "density": 0.1, "s": s, "j": j, "width": width, "height": hight, "middleInit": False,
                             "cluster_cond": 2})
     server.port = 8521  # The default
     server.launch()
