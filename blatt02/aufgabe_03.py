@@ -219,6 +219,21 @@ def entropy_ant_hold(ants):
     # -1 dran hängen
     return entropy * -1
 
+# im Folgenden werden die Emergence Methoden implementiert:
+def emergence_particle_x(particles):
+
+    return
+def emergence_particle_y(particles):
+    return
+def emergence_particle_neighbors(particles):
+    return
+def emergence_ant_x(ants):
+    return
+def emergence_ant_y(ants):
+    return
+def emergence_ant_hold(ants):
+    return
+
 
 class AntAgent(mesa.Agent):
 
@@ -358,6 +373,14 @@ class AntModel(mesa.Model):
         self.cluster_cond = cluster_cond
         self.average_particle_neighbors = 0
         self.finishing_up = False   #falls die cluster condition erfüllt ist, müssen alle Ameisen ihre Partikel ablegen und dürfen keine weiteren mehr aufheben
+
+        # system entropies
+        start_entropy_particle_x = 0
+        start_entropy_particle_y = 0
+        start_entropy_particle_neighbors = 0
+        start_entropy_ant_x = 0
+        start_entropy_ant_y = 0
+        start_entropy_ant_hold = 0
 
         global stein_count
         stein_count = 0
