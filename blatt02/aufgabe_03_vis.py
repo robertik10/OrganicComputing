@@ -30,20 +30,25 @@ def agent_portrayal(agent):
 
 if __name__ == "__main__":
 
-    width = 50
-    hight = 50
-    N = 50
+    width = 20
+    hight = 20
+    N = 5
     s = 2
     j = 5
 
 
-    grid = mesa.visualization.CanvasGrid(agent_portrayal, width, hight, 1000, 1000)
+    grid = mesa.visualization.CanvasGrid(agent_portrayal, width, hight, 100, 100)
     server = mesa.visualization.ModularServer(
         AntModel, [grid], "Ant Model",
         {"N": N, "density": 0.1, "s": s, "j": j, "width": width, "height": hight, "middleInit": False, "cluster_cond": 3}
     )
+
+    chart_particle_x = mesa.visualization.ChartModule([{"Label": "Emergenz Particle X",
+                                                        "Color":"Red"}],
+                                                      data_collector_name ='emergence_ant_hold_datacollector')
+
     server = ModularServer(AntModel,
-                           [grid],
+                           [grid, chart_particle_x],
                            "And Model",
                            {"N": N, "density": 0.1, "s": s, "j": j, "width": width, "height": hight, "middleInit": False,
                             "cluster_cond": 2})
