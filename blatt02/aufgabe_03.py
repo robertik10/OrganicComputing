@@ -2,6 +2,7 @@ import time
 import math
 import mesa
 import random
+import numpy as np
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -12,6 +13,12 @@ def get_ants(model):
     list = model.schedule.agents
     ant_list = [agent for agent in list if isinstance(agent, AntAgent)]
     return ant_list
+
+# returns all particles in current schedule as a list
+def get_particles(model):
+    list = model.schedule.agents
+    particle_list = [agent for agent in list if isinstance(agent, ParticleAgent)]
+    return particle_list
 
 # rechnet die durchscnittliche Partikel Nachbarszahl von allen vorhandenen Partikeln aus
 def average_particle_neighbors(model):
@@ -100,61 +107,117 @@ def dropChance(i):
 
 # calculate entropies of given attribute
 def entropy_particle_x(particles):
-    len = len(particles)
-    count = [len]
+    length = len(particles)
+    count = np.zeros(particles[0].model.grid.width) # für jede koordinate ein Feld
+
     entropy = 0
 
     for particle in particles:
         # TODO schauen ob Spielfeld bei von 0 bis 49 geht oder 1 bis 50
         x = particle.pos[0]
         count[x] += 1
+
+    # Anzahl der Partikel pro Koordinate in Wahrscheinlichkeit und Entropie umwandeln
     for i in count:
-        p = count[x]/ len
+        p = count[i]/ length
         entropy += p * math.log(p, 2)
 
+    # -1 dran hängen
     return entropy * -1
 
 def entropy_particle_y(particles):
-    len = len(particles)
-    count = [len]
+    length = len(particles)
+    count = np.zeros(particles[0].model.grid.hight)  # für jede koordinate ein Feld
     entropy = 0
 
     for particle in particles:
         # TODO schauen ob Spielfeld bei von 0 bis 49 geht oder 1 bis 50
         x = particle.pos[1]
         count[x] += 1
+
+    # Anzahl der Partikel pro Koordinate in Wahrscheinlichkeit und Entropie umwandeln
     for i in count:
-        p = count[x] / len
+        p = count[i] / length
         entropy += p * math.log(p, 2)
 
+    # -1 dran hängen
     return entropy * -1
     return
 
-# TODO bsiher nur copy paste von den anderen 2 funktionen
+# rechnet die entropy der Particle Neighbors aus
 def entropy_particle_neighbors(particles):
-    len = len(particles)
-    count = [len]
+    length = len(particles)
+    count = np.zeros(10)    # für alle Möglichen Kombinationen an Nachbarn (0, ... , 9)
     entropy = 0
 
     for particle in particles:
-        # TODO schauen ob Spielfeld bei von 0 bis 49 geht oder 1 bis 50
-        x = particle.pos[0]
+        x = particle.neighbors
         count[x] += 1
     for i in count:
-        p = count[x] / len
+        p = count[i] / len
         entropy += p * math.log(p, 2)
 
     return entropy * -1
-    return
+
 
 def entropy_ant_x(ants):
+    length = len(ants)
+    count = np.zeros(ants[0].model.grid.width)  # für jede koordinate ein Feld
 
-    return
+    entropy = 0
+
+    for agent in ants:
+        # TODO schauen ob Spielfeld bei von 0 bis 49 geht oder 1 bis 50
+        x = agent.pos[0]
+        count[x] += 1
+
+    # Anzahl der Partikel pro Koordinate in Wahrscheinlichkeit und Entropie umwandeln
+    for i in count:
+        p = count[i] / length
+        entropy += p * math.log(p, 2)
+
+    # -1 dran hängen
+    return entropy * -1
+
 def entropy_ant_y(ants):
-    return
+    length = len(ants)
+    count = np.zeros(ants[0].model.grid.hight)  # für jede koordinate ein Feld
+
+    entropy = 0
+
+    for agent in ants:
+        # TODO schauen ob Spielfeld bei von 0 bis 49 geht oder 1 bis 50
+        x = agent.pos[1]
+        count[x] += 1
+
+    # Anzahl der Partikel pro Koordinate in Wahrscheinlichkeit und Entropie umwandeln
+    for i in count:
+        p = count[i] / length
+        entropy += p * math.log(p, 2)
+
+    # -1 dran hängen
+    return entropy * -1
 
 def entropy_ant_hold(ants):
-    return
+    length = len(ants)
+    count = np.zeros(2)  # für jede Möglichkeit ein feld also (halten oder nicht halten)
+
+    entropy = 0
+
+    # falls Ameisen etwas trägt -> Feld 1 oder Feld True wird um eins erhöht, sonst das Feld 0 bzw. Feld False
+    for agent in ants:
+        if agent.aufgehoben is False:
+            count[0] += 1
+        else:
+            count[1] += 1
+
+    # Anzahl der Partikel pro Koordinate in Wahrscheinlichkeit und Entropie umwandeln
+    for i in count:
+        p = count[i] / length
+        entropy += p * math.log(p, 2)
+
+    # -1 dran hängen
+    return entropy * -1
 
 
 class AntAgent(mesa.Agent):
@@ -383,8 +446,7 @@ class AntModel(mesa.Model):
 
 
 
-
-if __name__ == "__main__":
+def test_main():
     # start timer
     start_time = time.time()
 
@@ -411,3 +473,21 @@ if __name__ == "__main__":
     print("finished in " + str(end_time - start_time) + "s!")
 
     plt.show()
+
+
+if __name__ == "__main__":
+
+    height = 50
+    width = 50
+    N = 50
+    cluster_cond = 3
+
+    model = AntModel(N, 0.1, 1, 3, height, width, True, cluster_cond)
+
+    particles = [particle for particle in model.schedule.agents if isinstance(particle, ParticleAgent)]
+    print(particles)
+
+    for i in range(10000):
+        print(entropy_particle_x(particles))
+        model.step()
+
