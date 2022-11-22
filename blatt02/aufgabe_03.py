@@ -119,11 +119,8 @@ def entropy_particle_x(particles):
     entropy = 0
 
     for particle in particles:
-        # TODO schauen ob Spielfeld bei von 0 bis 49 geht oder 1 bis 50
         x = particle.pos[0]
         count[x] += 1
-
-
 
     # Anzahl der Partikel pro Koordinate in Wahrscheinlichkeit und Entropie umwandeln
     for i in range(len(count)):
@@ -141,7 +138,6 @@ def entropy_particle_y(particles):
     entropy = 0
 
     for particle in particles:
-        # TODO schauen ob Spielfeld bei von 0 bis 49 geht oder 1 bis 50
         x = particle.pos[1]
         count[x] += 1
 
@@ -153,13 +149,12 @@ def entropy_particle_y(particles):
 
     # -1 dran hängen
     return entropy * -1
-    return
 
 
 # rechnet die entropy der Particle Neighbors aus
 def entropy_particle_neighbors(particles):
     length = len(particles)
-    count = np.zeros(10)  # für alle Möglichen Kombinationen an Nachbarn (0, ... , 9)
+    count = np.zeros(11)  # für alle Möglichen Kombinationen an Nachbarn (0, ... , 9)
     entropy = 0
 
     for particle in particles:
@@ -180,7 +175,6 @@ def entropy_ant_x(ants):
     entropy = 0
 
     for agent in ants:
-        # TODO schauen ob Spielfeld bei von 0 bis 49 geht oder 1 bis 50
         x = agent.pos[0]
         count[x] += 1
 
@@ -201,7 +195,6 @@ def entropy_ant_y(ants):
     entropy = 0
 
     for agent in ants:
-        # TODO schauen ob Spielfeld bei von 0 bis 49 geht oder 1 bis 50
         x = agent.pos[1]
         count[x] += 1
 
@@ -221,7 +214,7 @@ def entropy_ant_hold(ants):
 
     entropy = 0
 
-    # falls Ameisen etwas trägt -> Feld 1 oder Feld True wird um eins erhöht, sonst das Feld 0 bzw. Feld False
+    # falls Ameise etwas trägt -> Feld 1 bzw. Feld True wird um eins erhöht, sonst das Feld 0 bzw. Feld False
     for agent in ants:
         if agent.geladen is False:
             count[0] += 1
@@ -248,14 +241,14 @@ def emergence_particle_y(model, particles):
 
 
 def emergence_particle_neighbors(model, particles):
-    print("Start entropy neighbors: " + str(model.start_entropy_particle_neighbors))
-    print("End entropy neighbors: " + str(entropy_particle_neighbors(particles)))
+    #print("Start entropy neighbors: " + str(model.start_entropy_particle_neighbors))
+    #print("End entropy neighbors: " + str(entropy_particle_neighbors(particles)))
     return model.start_entropy_particle_neighbors - entropy_particle_neighbors(particles)
 
 
 def emergence_ant_x(model, ants):
-    print("Start entropy: " + str(model.start_entropy_ant_x))
-    print("End entropy x: " + str(entropy_ant_x(ants)))
+    #print("Start entropy: " + str(model.start_entropy_ant_x))
+    #print("End entropy x: " + str(entropy_ant_x(ants)))
     return model.start_entropy_ant_x - entropy_ant_x(ants)
 
 
@@ -370,12 +363,12 @@ class ParticleAgent(mesa.Agent):
     # nach jedem step wird geschaut, wie viele benachbarte partikel man selbst hat, um das Clusteringverhalten zu beobacheten
     def step(self):
         # nach benachbarten Partikel vom selben Typ suchen,um Custering Verhalten zu beobachten
-        neighbors = self.model.grid.get_neighbors(
+        neighborhood = self.model.grid.get_neighbors(
             self.pos, moore=True, include_center=False
         )
 
         count = 0
-        for agent in neighbors:
+        for agent in neighborhood:
             if isinstance(agent, ParticleAgent) and getDistance(agent, self) == 0:
                 count += 1
         self.neighbors = count
@@ -494,27 +487,57 @@ class AntModel(mesa.Model):
         print("Start entropy ant hold: " + str(self.start_entropy_ant_hold))
 
         # creating all datacollectors
+        self.entropy_particle_x_datacollector = mesa.DataCollector(
+            model_reporters={
+                "entropy Particle X": [entropy_particle_x, [get_particles(self)]]})
+        self.entropy_particle_y_datacollector = mesa.DataCollector(
+            model_reporters={
+                "entropy Particle Y": [entropy_particle_y, [get_particles(self)]]})
+        self.entropy_particle_neighbors_datacollector = mesa.DataCollector(
+            model_reporters={
+                "entropy Particle Neighbors": [entropy_particle_neighbors, [get_particles(self)]]})
+        self.entropy_ant_x_datacollector = mesa.DataCollector(
+            model_reporters={
+                "entropy Ant X": [entropy_ant_x, [get_ants(self)]]})
+        self.entropy_ant_y_datacollector = mesa.DataCollector(
+            model_reporters={
+                "entropy Ant Y": [entropy_ant_y, [get_ants(self)]]})
+        self.entropy_ant_hold_datacollector = mesa.DataCollector(
+            model_reporters={
+                "entropy Ant Hold": [entropy_ant_hold, [get_ants(self)]]})
         self.emergence_particle_x_datacollector = mesa.DataCollector(
-            model_reporters={"Emergence Particle X": [emergence_particle_x, [self, get_particles(self)]], "Emergence Particle Y": [emergence_particle_y, [self, get_particles(self)]]})
-        """self.emergence_particle_y_datacollector = mesa.DataCollector(
-            model_reporters={"Emergence Particle Y": [emergence_particle_y, [self, get_particles(self)]]})
-        self.emergence_particle_hold_datacollector = mesa.DataCollector(
-            model_reporters={"Emergence Particle Neighbors": [emergence_particle_neighbors, [self, get_particles(self)]]})
+            model_reporters={
+                "Emergence Particle X": [emergence_particle_x, [self, get_particles(self)]]})
+        self.emergence_particle_y_datacollector = mesa.DataCollector(
+            model_reporters={
+                "Emergence Particle Y": [emergence_particle_y, [self, get_particles(self)]]})
+        self.emergence_particle_neighbors_datacollector = mesa.DataCollector(
+            model_reporters={
+                "Emergence Particle Neighbors": [emergence_particle_neighbors, [self, get_particles(self)]]})
         self.emergence_ant_x_datacollector = mesa.DataCollector(
-            model_reporters={"Emergence Ant X": [emergence_ant_x, [self, get_ants(self)]]})
+            model_reporters={
+                "Emergence Ant X": [emergence_ant_x, [self, get_ants(self)]]})
         self.emergence_ant_y_datacollector = mesa.DataCollector(
-            model_reporters={"Emergence Ant Y": [emergence_ant_y, [self, get_ants(self)]]})"""
-        """self.emergence_ant_hold_datacollector = mesa.DataCollector(
-            model_reporters={"Emergence Ant Hold": [emergence_ant_hold, [self, get_ants(self)]]})"""
+            model_reporters={
+                "Emergence Ant Y": [emergence_ant_y, [self, get_ants(self)]]})
+        self.emergence_ant_hold_datacollector = mesa.DataCollector(
+            model_reporters={
+                "Emergence Ant Hold": [emergence_ant_hold, [self, get_ants(self)]]})
 
     def step(self):
-        # self.datacollector.collect(self)
+        # collecting entropy and emergence
+        self.entropy_particle_x_datacollector.collect(self)
+        self.entropy_particle_y_datacollector.collect(self)
+        self.entropy_particle_neighbors_datacollector.collect(self)
+        self.entropy_ant_x_datacollector.collect(self)
+        self.entropy_ant_y_datacollector.collect(self)
+        self.entropy_ant_hold_datacollector.collect(self)
         self.emergence_particle_x_datacollector.collect(self)
-        """self.emergence_particle_y_datacollector.collect(self)
-        self.emergence_particle_hold_datacollector.collect(self)
+        self.emergence_particle_y_datacollector.collect(self)
+        self.emergence_particle_neighbors_datacollector.collect(self)
         self.emergence_ant_x_datacollector.collect(self)
-        self.emergence_ant_y_datacollector.collect(self)"""
-        #self.emergence_ant_hold_datacollector.collect(self)
+        self.emergence_ant_y_datacollector.collect(self)
+        self.emergence_ant_hold_datacollector.collect(self)
 
         if self.finishing_up is False:
             self.schedule.step()
@@ -559,26 +582,77 @@ def test_main():
 
     plt.show()
 
+# 12 Diagramme für jeweils 6 entropie und 6 emergenz systemattribute
+def show_entropy_and_emergence(model):
+    # Entropie Partikel X
+    entropy_particle_x = model.entropy_particle_x_datacollector.get_model_vars_dataframe()
+    entropy_particle_x.plot()
+    #plt.figure()
+    # Entropie Partikel Y
+    entropy_particle_y = model.entropy_particle_y_datacollector.get_model_vars_dataframe()
+    entropy_particle_y.plot()
+    #plt.figure()
+    # Entropie Partikel neighbors
+    entropy_particle_neighbors = model.entropy_particle_neighbors_datacollector.get_model_vars_dataframe()
+    entropy_particle_neighbors.plot()
+    #plt.figure()
+    # Entropie Ant X
+    entropy_ant_x = model.entropy_ant_x_datacollector.get_model_vars_dataframe()
+    entropy_ant_x.plot()
+    #plt.figure()
+    # Entropie Ant Y
+    entropy_ant_y = model.entropy_ant_y_datacollector.get_model_vars_dataframe()
+    entropy_ant_y.plot()
+    #plt.figure()
+    # Entropie Ant Hold
+    entropy_ant_hold = model.entropy_ant_hold_datacollector.get_model_vars_dataframe()
+    entropy_ant_hold.plot()
+    #plt.figure()
+    # Emergence Particle X
+    emergence_particle_x = model.emergence_particle_x_datacollector.get_model_vars_dataframe()
+    emergence_particle_x.plot()
+    #plt.figure()
+    # Emergence Particle Y
+    emergence_particle_y = model.emergence_particle_y_datacollector.get_model_vars_dataframe()
+    emergence_particle_y.plot()
+    #plt.figure()
+    # Emergence Particle neighbors
+    emergence_particle_neighbors = model.emergence_particle_neighbors_datacollector.get_model_vars_dataframe()
+    emergence_particle_neighbors.plot()
+    #plt.figure()
+    # Emergence Ant X
+    emergence_ant_x = model.emergence_ant_x_datacollector.get_model_vars_dataframe()
+    emergence_ant_x.plot()
+    #plt.figure()
+    # Emergence Ant Y
+    emergence_ant_y = model.emergence_ant_y_datacollector.get_model_vars_dataframe()
+    emergence_ant_y.plot()
+    #plt.figure()
+    # Emergence Ant hold
+    emergence_ant_hold = model.emergence_ant_hold_datacollector.get_model_vars_dataframe()
+    emergence_ant_hold.plot()
+
+    plt.show()
+
+
+
 
 if __name__ == "__main__":
 
+
+    # bei 50x50 Feldern, wird die Cluster Bedingung erst nach mehr als 70000 Steps erfüllt
     height = 20
     width = 20
-    N = 10
-    cluster_cond = 2
+    N = 20
 
-    model = AntModel(N, 0.1, 1, 3, height, width, False, cluster_cond)
+    cluster_cond = 2    # wenn alle Partikel mindestens cluster_cond Nachbarn haben wird das Programm beendet
 
-    particles = [particle for particle in model.schedule.agents if isinstance(particle, ParticleAgent)]
-    #print(particles)
+    model = AntModel(N, 0.1, 2, 3, height, width, False, cluster_cond)
 
-    for i in range(10000):
-        #print(entropy_particle_x(particles))
+    for i in range(70000):
         if all_have_x_neighbors(model, cluster_cond):
             print("clusters have been made, after " + str(i) + " steps!")
             break
         model.step()
 
-    particle_x = model.emergence_particle_x_datacollector.get_model_vars_dataframe()
-    particle_x.plot()
-    plt.figure()
+    show_entropy_and_emergence(model)

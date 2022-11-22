@@ -30,25 +30,30 @@ def agent_portrayal(agent):
 
 if __name__ == "__main__":
 
-    width = 20
-    hight = 20
-    N = 5
-    s = 2
+    width = 50
+    hight = 50
+    N = 50
+    s = 3
     j = 5
+    cluster_cond = 2
 
 
-    grid = mesa.visualization.CanvasGrid(agent_portrayal, width, hight, 100, 100)
+    grid = mesa.visualization.CanvasGrid(agent_portrayal, width, hight, 500, 500)
     server = mesa.visualization.ModularServer(
         AntModel, [grid], "Ant Model",
-        {"N": N, "density": 0.1, "s": s, "j": j, "width": width, "height": hight, "middleInit": False, "cluster_cond": 3}
+        {"N": N, "density": 0.1, "s": s, "j": j, "width": width, "height": hight, "middleInit": False, "cluster_cond": cluster_cond}
     )
 
-    chart_particle_x = mesa.visualization.ChartModule([{"Label": "Emergenz Particle X",
+    '''
+    dauert zu lang..
+    chart_particle_x = mesa.visualization.ChartModule([{"Label": "Emergence Particle X",
                                                         "Color":"Red"}],
-                                                      data_collector_name ='emergence_particle_x_datacollector')
+                                                      canvas_height=200,
+                                                      canvas_width=500,
+                                                      data_collector_name ='emergence_particle_x_datacollector')'''
 
     server = ModularServer(AntModel,
-                           [grid, chart_particle_x],
+                           [grid],
                            "And Model",
                            {"N": N, "density": 0.1, "s": s, "j": j, "width": width, "height": hight, "middleInit": False,
                             "cluster_cond": 2})

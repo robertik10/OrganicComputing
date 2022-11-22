@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="035b4ba1-2f91-4c0a-8d7b-6e4ed9eebb6a" name="Default Changelist" comment="alle FUnktionen implementiert aber visualisierung funkts net">
+    <list default="true" id="035b4ba1-2f91-4c0a-8d7b-6e4ed9eebb6a" name="Default Changelist" comment="Visualisierung funktioniert live nicht, aber sonst wirds angezeigt">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/blatt02/aufgabe_03.py" beforeDir="false" afterPath="$PROJECT_DIR$/blatt02/aufgabe_03.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/blatt02/aufgabe_03_vis.py" beforeDir="false" afterPath="$PROJECT_DIR$/blatt02/aufgabe_03_vis.py" afterDir="false" />
@@ -22,13 +23,13 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "last_opened_file_path": "C:/Users/rober/PycharmProjects/OrganicComputing"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/rober/PycharmProjects/OrganicComputing&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="Python.aufgabe_03">
     <configuration name="aufgabe_03" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="OrganicComputing" />
@@ -109,7 +110,14 @@
       <option name="project" value="LOCAL" />
       <updated>1669047795951</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Visualisierung funktioniert live nicht, aber sonst wirds angezeigt">
+      <created>1669128525626</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1669128525626</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -127,6 +135,7 @@
     <MESSAGE value="Entropie Funktionen implementiert aber noch nicht getestet UND noch nicht geplottet..." />
     <MESSAGE value="start variablen dazu geschrieben aber nicht aktualisiert zum start..." />
     <MESSAGE value="alle FUnktionen implementiert aber visualisierung funkts net" />
-    <option name="LAST_COMMIT_MESSAGE" value="alle FUnktionen implementiert aber visualisierung funkts net" />
+    <MESSAGE value="Visualisierung funktioniert live nicht, aber sonst wirds angezeigt" />
+    <option name="LAST_COMMIT_MESSAGE" value="Visualisierung funktioniert live nicht, aber sonst wirds angezeigt" />
   </component>
 </project>
