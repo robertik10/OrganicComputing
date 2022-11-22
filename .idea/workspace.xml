@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="035b4ba1-2f91-4c0a-8d7b-6e4ed9eebb6a" name="Default Changelist" comment="start variablen dazu geschrieben aber nicht aktualisiert zum start...">
+    <list default="true" id="035b4ba1-2f91-4c0a-8d7b-6e4ed9eebb6a" name="Default Changelist" comment="alle FUnktionen implementiert aber visualisierung funkts net">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/blatt02/aufgabe_03.py" beforeDir="false" afterPath="$PROJECT_DIR$/blatt02/aufgabe_03.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/blatt02/aufgabe_03_vis.py" beforeDir="false" afterPath="$PROJECT_DIR$/blatt02/aufgabe_03_vis.py" afterDir="false" />
@@ -29,7 +29,7 @@
     "last_opened_file_path": "C:/Users/rober/PycharmProjects/OrganicComputing"
   }
 }]]></component>
-  <component name="RunManager" selected="Python.aufgabe_03_vis">
+  <component name="RunManager" selected="Python.aufgabe_03">
     <configuration name="aufgabe_03" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="OrganicComputing" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -74,8 +74,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.aufgabe_03_vis" />
         <item itemvalue="Python.aufgabe_03" />
+        <item itemvalue="Python.aufgabe_03_vis" />
       </list>
     </recent_temporary>
   </component>
@@ -102,7 +102,14 @@
       <option name="project" value="LOCAL" />
       <updated>1669041764336</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="alle FUnktionen implementiert aber visualisierung funkts net">
+      <created>1669047795951</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1669047795951</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -119,6 +126,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Entropie Funktionen implementiert aber noch nicht getestet UND noch nicht geplottet..." />
     <MESSAGE value="start variablen dazu geschrieben aber nicht aktualisiert zum start..." />
-    <option name="LAST_COMMIT_MESSAGE" value="start variablen dazu geschrieben aber nicht aktualisiert zum start..." />
+    <MESSAGE value="alle FUnktionen implementiert aber visualisierung funkts net" />
+    <option name="LAST_COMMIT_MESSAGE" value="alle FUnktionen implementiert aber visualisierung funkts net" />
   </component>
 </project>

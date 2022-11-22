@@ -45,7 +45,7 @@ if __name__ == "__main__":
 
     chart_particle_x = mesa.visualization.ChartModule([{"Label": "Emergenz Particle X",
                                                         "Color":"Red"}],
-                                                      data_collector_name ='emergence_ant_hold_datacollector')
+                                                      data_collector_name ='emergence_particle_x_datacollector')
 
     server = ModularServer(AntModel,
                            [grid, chart_particle_x],
