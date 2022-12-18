@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="035b4ba1-2f91-4c0a-8d7b-6e4ed9eebb6a" name="Default Changelist" comment="Visualisierung funktioniert live nicht, aber sonst wirds angezeigt">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="035b4ba1-2f91-4c0a-8d7b-6e4ed9eebb6a" name="Default Changelist" comment="Visualisierung funktioniert live aber zu langsam, sonst passts">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/blatt02/aufgabe_03.py" beforeDir="false" afterPath="$PROJECT_DIR$/blatt02/aufgabe_03.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/blatt02/aufgabe_03_vis.py" beforeDir="false" afterPath="$PROJECT_DIR$/blatt02/aufgabe_03_vis.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,7 +28,28 @@
     &quot;last_opened_file_path&quot;: &quot;C:/Users/rober/PycharmProjects/OrganicComputing&quot;
   }
 }</component>
-  <component name="RunManager" selected="Python.aufgabe_03">
+  <component name="RunManager" selected="Python.aufgabe_02_vis">
+    <configuration name="aufgabe_02_vis" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="OrganicComputing" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/blatt01_01" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/blatt01_01/aufgabe_02_vis.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="aufgabe_03" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="OrganicComputing" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -75,8 +94,9 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.aufgabe_03" />
+        <item itemvalue="Python.aufgabe_02_vis" />
         <item itemvalue="Python.aufgabe_03_vis" />
+        <item itemvalue="Python.aufgabe_03" />
       </list>
     </recent_temporary>
   </component>
@@ -117,7 +137,14 @@
       <option name="project" value="LOCAL" />
       <updated>1669128525626</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Visualisierung funktioniert live aber zu langsam, sonst passts">
+      <created>1669140932831</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1669140932831</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -136,6 +163,7 @@
     <MESSAGE value="start variablen dazu geschrieben aber nicht aktualisiert zum start..." />
     <MESSAGE value="alle FUnktionen implementiert aber visualisierung funkts net" />
     <MESSAGE value="Visualisierung funktioniert live nicht, aber sonst wirds angezeigt" />
-    <option name="LAST_COMMIT_MESSAGE" value="Visualisierung funktioniert live nicht, aber sonst wirds angezeigt" />
+    <MESSAGE value="Visualisierung funktioniert live aber zu langsam, sonst passts" />
+    <option name="LAST_COMMIT_MESSAGE" value="Visualisierung funktioniert live aber zu langsam, sonst passts" />
   </component>
 </project>

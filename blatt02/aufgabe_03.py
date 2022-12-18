@@ -554,33 +554,6 @@ class AntModel(mesa.Model):
                 self.running = False
 
 
-def test_main():
-    # start timer
-    start_time = time.time()
-
-    height = 50
-    width = 50
-    N = 50
-    cluster_cond = 3
-
-    model = AntModel(N, 0.1, 1, 3, height, width, True, cluster_cond)
-    for i in range(10000):
-        if all_have_x_neighbors(model, cluster_cond):
-            print("clusters have been made, after " + str(i) + " steps!")
-            break
-        model.step()
-    particle_neighbors = model.emergence_ant_hold_datacollector.get_model_vars_dataframe()
-    particle_neighbors.plot()
-
-    plt.figure()
-
-    show_particle_grid(model)
-
-    # end timer
-    end_time = time.time()
-    print("finished in " + str(end_time - start_time) + "s!")
-
-    plt.show()
 
 # 12 Diagramme für jeweils 6 entropie und 6 emergenz systemattribute
 def show_entropy_and_emergence(model):
@@ -633,8 +606,6 @@ def show_entropy_and_emergence(model):
     emergence_ant_hold.plot()
 
     plt.show()
-
-
 
 
 if __name__ == "__main__":
