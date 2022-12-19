@@ -1,3 +1,8 @@
+# new
+# observer
+DEFAULT_SCORE = 0
+# new
+
 SIZE = 400
 GRID_LEN = 4
 GRID_PADDING = 10
@@ -47,6 +52,7 @@ FONT = ("Verdana",40,"bold")
 
 KEY_QUIT = "Escape"
 KEY_BACK = "b"
+KEY_RESET = "r" # CONTROLER new code
 
 KEY_UP = "Up"
 KEY_DOWN = "Down"

@@ -3,8 +3,10 @@ import random
 import logic
 import constants as c
 
+
 def gen():
     return random.randint(0, c.GRID_LEN - 1)
+
 
 class GameGrid(Frame):
     def __init__(self):
@@ -12,7 +14,7 @@ class GameGrid(Frame):
 
         self.grid()
         self.master.title('2048')
-        self.master.bind("<Key>", self.key_down)
+        self.master.bind("<Key>", self.move)
 
         self.commands = {
             c.KEY_UP: logic.up,
@@ -35,10 +37,12 @@ class GameGrid(Frame):
         self.history_matrixs = []
         self.update_grid_cells()
 
+        self.move()
         self.mainloop()
 
+
     def init_grid(self):
-        background = Frame(self, bg=c.BACKGROUND_COLOR_GAME,width=c.SIZE, height=c.SIZE)
+        background = Frame(self, bg=c.BACKGROUND_COLOR_GAME, width=c.SIZE, height=c.SIZE)
         background.grid()
 
         for i in range(c.GRID_LEN):
@@ -73,7 +77,7 @@ class GameGrid(Frame):
             for j in range(c.GRID_LEN):
                 new_number = self.matrix[i][j]
                 if new_number == 0:
-                    self.grid_cells[i][j].configure(text="",bg=c.BACKGROUND_COLOR_CELL_EMPTY)
+                    self.grid_cells[i][j].configure(text="", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
                 else:
                     self.grid_cells[i][j].configure(
                         text=str(new_number),
@@ -82,9 +86,12 @@ class GameGrid(Frame):
                     )
         self.update_idletasks()
 
+
+    # old move function -> not in use right now
     def key_down(self, event):
         key = event.keysym
         print(event)
+        if key == c.KEY_RESET: self.reset()
         if key == c.KEY_QUIT: exit()
         if key == c.KEY_BACK and len(self.history_matrixs) > 1:
             self.matrix = self.history_matrixs.pop()
@@ -109,5 +116,52 @@ class GameGrid(Frame):
         while self.matrix[index[0]][index[1]] != 0:
             index = (gen(), gen())
         self.matrix[index[0]][index[1]] = 2
+
+    # OBSERVER
+    def state(self):
+        # find out if game is finished
+        if logic.game_state(self.matrix) == 'win' or logic.game_state(self.matrix) == 'lose':
+            finished = True
+        else:
+            finished = False
+
+        # matrix of game
+        matrix = self.matrix
+
+        # game points
+        current_score = logic.score(self)
+
+        return matrix, current_score, finished
+
+    # CONTROLER
+    def reset(self):
+        logic.update_score(0)
+        self.matrix = logic.new_game(c.GRID_LEN)
+        self.history_matrixs = []
+        self.update_grid_cells()
+
+    # CONTROLLER
+    def move(self):
+
+        while logic.game_state(self.matrix) == 'not over':
+            rand_move = random.choice([c.KEY_UP,
+                                       c.KEY_DOWN,
+                                       c.KEY_LEFT,
+                                       c.KEY_RIGHT])
+            print(rand_move)
+            self.matrix, done = self.commands[rand_move](self.matrix)
+            if done:
+                self.matrix = logic.add_two(self.matrix)
+                # record last move
+                self.history_matrixs.append(self.matrix)
+                self.update_grid_cells()
+                if logic.game_state(self.matrix) == 'win':
+                    self.grid_cells[1][1].configure(text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
+                    self.grid_cells[1][2].configure(text="Win!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
+                if logic.game_state(self.matrix) == 'lose':
+                    self.grid_cells[1][1].configure(text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
+                    self.grid_cells[1][2].configure(text="Lose!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
+
+        print()
 
 game_grid = GameGrid()

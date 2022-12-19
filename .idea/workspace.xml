@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="035b4ba1-2f91-4c0a-8d7b-6e4ed9eebb6a" name="Default Changelist" comment="Visualisierung funktioniert live aber zu langsam, sonst passts">
+    <list default="true" id="035b4ba1-2f91-4c0a-8d7b-6e4ed9eebb6a" name="Default Changelist" comment="blatt 4 hochgeladen">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/blatt02/aufgabe_03.py" beforeDir="false" afterPath="$PROJECT_DIR$/blatt02/aufgabe_03.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/blatt04/2048-python-master/constants.py" beforeDir="false" afterPath="$PROJECT_DIR$/blatt04/2048-python-master/constants.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/blatt04/2048-python-master/logic.py" beforeDir="false" afterPath="$PROJECT_DIR$/blatt04/2048-python-master/logic.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/blatt04/2048-python-master/puzzle.py" beforeDir="false" afterPath="$PROJECT_DIR$/blatt04/2048-python-master/puzzle.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -28,7 +30,7 @@
     &quot;last_opened_file_path&quot;: &quot;C:/Users/rober/PycharmProjects/OrganicComputing&quot;
   }
 }</component>
-  <component name="RunManager" selected="Python.aufgabe_02_vis">
+  <component name="RunManager">
     <configuration name="aufgabe_02_vis" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="OrganicComputing" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -144,7 +146,14 @@
       <option name="project" value="LOCAL" />
       <updated>1669140932831</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="blatt 4 hochgeladen">
+      <created>1671369968298</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1671369968298</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -164,6 +173,7 @@
     <MESSAGE value="alle FUnktionen implementiert aber visualisierung funkts net" />
     <MESSAGE value="Visualisierung funktioniert live nicht, aber sonst wirds angezeigt" />
     <MESSAGE value="Visualisierung funktioniert live aber zu langsam, sonst passts" />
-    <option name="LAST_COMMIT_MESSAGE" value="Visualisierung funktioniert live aber zu langsam, sonst passts" />
+    <MESSAGE value="blatt 4 hochgeladen" />
+    <option name="LAST_COMMIT_MESSAGE" value="blatt 4 hochgeladen" />
   </component>
 </project>
