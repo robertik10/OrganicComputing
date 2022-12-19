@@ -2,6 +2,8 @@ from tkinter import Frame, Label, CENTER
 import random
 import logic
 import constants as c
+import matplotlib.pyplot as plt
+
 
 
 def gen():
@@ -37,8 +39,8 @@ class GameGrid(Frame):
         self.history_matrixs = []
         self.update_grid_cells()
 
-        self.move()
-        self.mainloop()
+        self.simulate()
+        #self.mainloop()
 
 
     def init_grid(self):
@@ -148,7 +150,6 @@ class GameGrid(Frame):
                                        c.KEY_DOWN,
                                        c.KEY_LEFT,
                                        c.KEY_RIGHT])
-            print(rand_move)
             self.matrix, done = self.commands[rand_move](self.matrix)
             if done:
                 self.matrix = logic.add_two(self.matrix)
@@ -162,6 +163,34 @@ class GameGrid(Frame):
                     self.grid_cells[1][1].configure(text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
                     self.grid_cells[1][2].configure(text="Lose!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
 
-        print()
+    # O/C simulation
+    def simulate(self):
+        SIM_LENGTH = 100
+        x = list((range(0,SIM_LENGTH)))
+        score = []
+
+        step = 0
+        while step < SIM_LENGTH:
+            self.reset()
+            self.move()
+            score.append(logic.score)
+
+            step = step + 1
+            print("step :" + str(step))
+
+        # calculate average score
+        average = 0
+        for val in score: average += val
+        average = average / SIM_LENGTH
+
+        # plot
+        plt.plot(x, score, linewidth=2.0, label = 'score')
+        plt.axhline(average, color = "red", label = 'average')
+        plt.legend()
+        plt.show()
+
+        return
+
+
 
 game_grid = GameGrid()
