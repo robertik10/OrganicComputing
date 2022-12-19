@@ -39,7 +39,7 @@ class GameGrid(Frame):
         self.history_matrixs = []
         self.update_grid_cells()
 
-        self.simulate()
+        self.simulate(5)
         #self.mainloop()
 
 
@@ -164,27 +164,31 @@ class GameGrid(Frame):
                     self.grid_cells[1][2].configure(text="Lose!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
 
     # O/C simulation
-    def simulate(self):
+    def simulate(self, size):
+        # todo c.GRID_LEN = size so einfach geht das scheinbar nicht
+        #self.reset()
+
         SIM_LENGTH = 100
         x = list((range(0,SIM_LENGTH)))
-        score = []
+        y_score = []
 
+        print("Running first simulation with 3x3. Might take up to a minute.")
         step = 0
         while step < SIM_LENGTH:
             self.reset()
             self.move()
-            score.append(logic.score)
+            y_score.append(logic.score)
 
             step = step + 1
-            print("step :" + str(step))
+            print("step :" + str(step) + "/" + str(SIM_LENGTH))
 
         # calculate average score
         average = 0
-        for val in score: average += val
+        for val in y_score: average += val
         average = average / SIM_LENGTH
 
         # plot
-        plt.plot(x, score, linewidth=2.0, label = 'score')
+        plt.plot(x, y_score, linewidth = 2.0, label = 'score')
         plt.axhline(average, color = "red", label = 'average')
         plt.legend()
         plt.show()
