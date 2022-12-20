@@ -1,5 +1,4 @@
 from tkinter import Frame, Label, CENTER
-import tkinter
 import random
 import logic
 import constants as c
@@ -15,7 +14,7 @@ class GameGrid(Frame):
         Frame.__init__(self)
         self.grid()
         self.master.title('2048')
-        self.master.bind("<Key>", self.move)
+        self.master.bind("<Key>", move)
 
         self.commands = {
             c.KEY_UP: logic.up,
@@ -115,78 +114,77 @@ class GameGrid(Frame):
             index = (gen(), gen())
         self.matrix[index[0]][index[1]] = 2
 
-    # OBSERVER
-    def state(self):
-        # find out if game is finished
-        if logic.game_state(self.matrix) == 'win' or logic.game_state(self.matrix) == 'lose':
-            finished = True
-        else:
-            finished = False
+# OBSERVER
+def state(game_grid):
+    # find out if game_grid is finished
+    if logic.game_grid_state(game_grid.matrix) == 'win' or logic.game_grid_state(game_grid.matrix) == 'lose':
+        finished = True
+    else:
+        finished = False
 
-        # matrix of game
-        matrix = self.matrix
+    # matrix of game_grid
+    matrix = game_grid.matrix
 
-        # game points
-        current_score = logic.score
+    # game_grid points
+    current_score = logic.score
 
-        return matrix, current_score, finished
+    return matrix, current_score, finished
 
-    # CONTROLER
-    def reset(self):
-        logic.update_score(0)
-        # self.destroy()
+# CONTROLLER
+def reset(game_grid):
+    logic.update_score(0)
+    game_grid.matrix = logic.new_game(c.GRID_LEN)
+    game_grid.history_matrixs = []
+    game_grid.update_grid_cells()
 
-        self.matrix = logic.new_game(c.GRID_LEN)
-        self.history_matrixs = []
-        self.update_grid_cells()
+# CONTROLLER
 
-    # CONTROLLER
-    def move(self):
+def move(game_grid):
 
-        while logic.game_state(self.matrix) == 'not over':
-            rand_move = random.choice([c.KEY_UP,
-                                       c.KEY_DOWN,
-                                       c.KEY_LEFT,
-                                       c.KEY_RIGHT])
-            self.matrix, done = self.commands[rand_move](self.matrix)
-            if done:
-                self.matrix = logic.add_two(self.matrix)
-                # record last move
-                self.history_matrixs.append(self.matrix)
-                self.update_grid_cells()
-                if logic.game_state(self.matrix) == 'win':
-                    self.grid_cells[1][0].configure(text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
-                    self.grid_cells[1][1].configure(text="Win!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
-                if logic.game_state(self.matrix) == 'lose':
-                    self.grid_cells[1][0].configure(text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
-                    self.grid_cells[1][1].configure(text="Lose!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
+    while logic.game_state(game_grid.matrix) == 'not over':
+        rand_move = random.choice([c.KEY_UP,
+                                   c.KEY_DOWN,
+                                   c.KEY_LEFT,
+                                   c.KEY_RIGHT])
+        game_grid.matrix, done = game_grid.commands[rand_move](game_grid.matrix)
+        if done:
+            game_grid.matrix = logic.add_two(game_grid.matrix)
+            # record last move
+            game_grid.history_matrixs.append(game_grid.matrix)
+            game_grid.update_grid_cells()
+            if logic.game_state(game_grid.matrix) == 'win':
+                game_grid.grid_cells[1][0].configure(text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
+                game_grid.grid_cells[1][1].configure(text="Win!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
+            if logic.game_state(game_grid.matrix) == 'lose':
+                game_grid.grid_cells[1][0].configure(text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
+                game_grid.grid_cells[1][1].configure(text="Lose!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
 
 
 # O/C simulation with size determining the frame size -> e.g. size = 4 -> Frame is 4x4
 def simulate(size):
-    c.GRID_LEN = size
-    SIM_LENGTH = 100  # set simulation length
+    c.GRID_LEN = size   # change GRID_LEN constant before starting new game
+    sim_length = 100  # set simulation length
     game_grid = GameGrid()  # creates new game without starting it
 
     # initialisation of lists for plots
-    x = list((range(0, SIM_LENGTH)))
+    x = list((range(0, sim_length)))
     y_score = []
 
-    # start simulation for SIM_LENGTH amount of times or "games"
+    # start simulation for sim_length amount of times or "games"
     game_nr = 0
     print("Running simulation with " + str(size) + "x" + str(size) + ". Might take up to a minute.")
-    while game_nr < SIM_LENGTH:
-        game_grid.reset()
-        game_grid.move()
+    while game_nr < sim_length:
+        reset(game_grid)
+        move(game_grid)
         y_score.append(logic.score)
 
         game_nr = game_nr + 1
-        print("Current Game :" + str(game_nr) + "/" + str(SIM_LENGTH))
+        print("Current Game :" + str(game_nr) + "/" + str(sim_length))
 
     # calculate average score
     average = 0
     for val in y_score: average += val
-    average = average / SIM_LENGTH
+    average = average / sim_length
     print("average score = " + str(average))
 
     # plot
@@ -206,4 +204,3 @@ def simulate(size):
 simulate(2)
 simulate(3)
 simulate(4)
-
