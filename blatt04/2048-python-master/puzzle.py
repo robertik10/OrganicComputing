@@ -117,7 +117,7 @@ class GameGrid(Frame):
 # OBSERVER
 def state(game_grid):
     # find out if game_grid is finished
-    if logic.game_grid_state(game_grid.matrix) == 'win' or logic.game_grid_state(game_grid.matrix) == 'lose':
+    if logic.game_state(game_grid.matrix) == 'win' or logic.game_state(game_grid.matrix) == 'lose':
         finished = True
     else:
         finished = False
