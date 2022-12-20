@@ -1,9 +1,9 @@
 from tkinter import Frame, Label, CENTER
+import tkinter
 import random
 import logic
 import constants as c
 import matplotlib.pyplot as plt
-
 
 
 def gen():
@@ -13,7 +13,6 @@ def gen():
 class GameGrid(Frame):
     def __init__(self):
         Frame.__init__(self)
-
         self.grid()
         self.master.title('2048')
         self.master.bind("<Key>", self.move)
@@ -39,10 +38,7 @@ class GameGrid(Frame):
         self.history_matrixs = []
         self.update_grid_cells()
 
-        # start simulation
-        self.simulate(3)
-        #self.mainloop()
-
+        # self.mainloop()
 
     def init_grid(self):
         background = Frame(self, bg=c.BACKGROUND_COLOR_GAME, width=c.SIZE, height=c.SIZE)
@@ -88,7 +84,6 @@ class GameGrid(Frame):
                         fg=c.CELL_COLOR_DICT[new_number]
                     )
         self.update_idletasks()
-
 
     # old move function -> not in use right now
     def key_down(self, event):
@@ -141,11 +136,9 @@ class GameGrid(Frame):
         logic.update_score(0)
         # self.destroy()
 
-
         self.matrix = logic.new_game(c.GRID_LEN)
         self.history_matrixs = []
         self.update_grid_cells()
-
 
     # CONTROLLER
     def move(self):
@@ -168,42 +161,49 @@ class GameGrid(Frame):
                     self.grid_cells[1][0].configure(text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
                     self.grid_cells[1][1].configure(text="Lose!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
 
-    # O/C simulation
-    def simulate(self, size):
-        c.GRID_LEN = size
-        self.reset()
 
-        SIM_LENGTH = 100    # set simulation length
-        x = list((range(0 ,SIM_LENGTH)))
-        y_score = []
+# O/C simulation with size determining the frame size -> e.g. size = 4 -> Frame is 4x4
+def simulate(size):
+    c.GRID_LEN = size
+    SIM_LENGTH = 100  # set simulation length
+    game_grid = GameGrid()  # creates new game without starting it
 
-        print("Running first simulation with 3x3. Might take up to a minute.")
-        step = 0
-        while step < SIM_LENGTH:
-            self.reset()
-            self.move()
-            y_score.append(logic.score)
+    # initialisation of lists for plots
+    x = list((range(0, SIM_LENGTH)))
+    y_score = []
 
-            step = step + 1
-            print("step :" + str(step) + "/" + str(SIM_LENGTH))
+    # start simulation for SIM_LENGTH amount of times or "games"
+    game_nr = 0
+    print("Running simulation with " + str(size) + "x" + str(size) + ". Might take up to a minute.")
+    while game_nr < SIM_LENGTH:
+        game_grid.reset()
+        game_grid.move()
+        y_score.append(logic.score)
 
+        game_nr = game_nr + 1
+        print("Current Game :" + str(game_nr) + "/" + str(SIM_LENGTH))
 
+    # calculate average score
+    average = 0
+    for val in y_score: average += val
+    average = average / SIM_LENGTH
+    print("average score = " + str(average))
 
-        # calculate average score
-        average = 0
-        for val in y_score: average += val
-        average = average / SIM_LENGTH
+    # plot
+    plt.plot(x, y_score, linewidth=2.0, label='score')
+    plt.axhline(average, color="red", label='average')
+    plt.legend()
+    plt.show()
 
-        print("average score = " + str(average))
-
-        # plot
-        plt.plot(x, y_score, linewidth = 2.0, label = 'score')
-        plt.axhline(average, color = "red", label = 'average')
-        plt.legend()
-        plt.show()
-
+    # close game after simulation ends
+    try:
+        game_grid.destroy()
+    finally:
         return
 
 
+# start simulation
+simulate(2)
+simulate(3)
+simulate(4)
 
-game_grid = GameGrid()
