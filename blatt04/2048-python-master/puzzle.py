@@ -39,7 +39,8 @@ class GameGrid(Frame):
         self.history_matrixs = []
         self.update_grid_cells()
 
-        self.simulate(5)
+        # start simulation
+        self.simulate(3)
         #self.mainloop()
 
 
@@ -131,16 +132,20 @@ class GameGrid(Frame):
         matrix = self.matrix
 
         # game points
-        current_score = logic.score(self)
+        current_score = logic.score
 
         return matrix, current_score, finished
 
     # CONTROLER
     def reset(self):
         logic.update_score(0)
+        # self.destroy()
+
+
         self.matrix = logic.new_game(c.GRID_LEN)
         self.history_matrixs = []
         self.update_grid_cells()
+
 
     # CONTROLLER
     def move(self):
@@ -157,19 +162,19 @@ class GameGrid(Frame):
                 self.history_matrixs.append(self.matrix)
                 self.update_grid_cells()
                 if logic.game_state(self.matrix) == 'win':
-                    self.grid_cells[1][1].configure(text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
-                    self.grid_cells[1][2].configure(text="Win!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
+                    self.grid_cells[1][0].configure(text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
+                    self.grid_cells[1][1].configure(text="Win!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
                 if logic.game_state(self.matrix) == 'lose':
-                    self.grid_cells[1][1].configure(text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
-                    self.grid_cells[1][2].configure(text="Lose!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
+                    self.grid_cells[1][0].configure(text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
+                    self.grid_cells[1][1].configure(text="Lose!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
 
     # O/C simulation
     def simulate(self, size):
-        # todo c.GRID_LEN = size so einfach geht das scheinbar nicht
-        #self.reset()
+        c.GRID_LEN = size
+        self.reset()
 
-        SIM_LENGTH = 100
-        x = list((range(0,SIM_LENGTH)))
+        SIM_LENGTH = 100    # set simulation length
+        x = list((range(0 ,SIM_LENGTH)))
         y_score = []
 
         print("Running first simulation with 3x3. Might take up to a minute.")
@@ -182,10 +187,14 @@ class GameGrid(Frame):
             step = step + 1
             print("step :" + str(step) + "/" + str(SIM_LENGTH))
 
+
+
         # calculate average score
         average = 0
         for val in y_score: average += val
         average = average / SIM_LENGTH
+
+        print("average score = " + str(average))
 
         # plot
         plt.plot(x, y_score, linewidth = 2.0, label = 'score')
