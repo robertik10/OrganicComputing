@@ -138,7 +138,7 @@ def reset(game_grid):
     game_grid.update_grid_cells()
 
 # CONTROLLER
-
+#verbessert
 def move(game_grid, key):
 
     game_grid.matrix, done = game_grid.commands[key](game_grid.matrix)

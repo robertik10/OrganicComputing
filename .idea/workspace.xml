@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="035b4ba1-2f91-4c0a-8d7b-6e4ed9eebb6a" name="Default Changelist" comment="Ordner für Blatt 05 erstellt">
-      <change beforePath="$PROJECT_DIR$/blatt05/2048-python-master/puzzle.py" beforeDir="false" afterPath="$PROJECT_DIR$/blatt05/2048-python-master/puzzle.py" afterDir="false" />
+    <list default="true" id="035b4ba1-2f91-4c0a-8d7b-6e4ed9eebb6a" name="Default Changelist" comment="move methode richtig gemacht">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -183,7 +183,14 @@
       <option name="project" value="LOCAL" />
       <updated>1673883917342</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="move methode richtig gemacht">
+      <created>1673884210083</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1673884210083</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -208,6 +215,7 @@
     <MESSAGE value="0.3 simulation und plot möglich ✅&#10;0.3 Einstellen von Spielgröße fehlt ❌" />
     <MESSAGE value="0.3 Einstellen von Spielgröße fehlt ❌" />
     <MESSAGE value="Ordner für Blatt 05 erstellt" />
-    <option name="LAST_COMMIT_MESSAGE" value="Ordner für Blatt 05 erstellt" />
+    <MESSAGE value="move methode richtig gemacht" />
+    <option name="LAST_COMMIT_MESSAGE" value="move methode richtig gemacht" />
   </component>
 </project>
