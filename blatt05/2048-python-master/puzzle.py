@@ -139,25 +139,20 @@ def reset(game_grid):
 
 # CONTROLLER
 
-def move(game_grid):
+def move(game_grid, key):
 
-    while logic.game_state(game_grid.matrix) == 'not over':
-        rand_move = random.choice([c.KEY_UP,
-                                   c.KEY_DOWN,
-                                   c.KEY_LEFT,
-                                   c.KEY_RIGHT])
-        game_grid.matrix, done = game_grid.commands[rand_move](game_grid.matrix)
-        if done:
-            game_grid.matrix = logic.add_two(game_grid.matrix)
-            # record last move
-            game_grid.history_matrixs.append(game_grid.matrix)
-            game_grid.update_grid_cells()
-            if logic.game_state(game_grid.matrix) == 'win':
-                game_grid.grid_cells[1][0].configure(text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
-                game_grid.grid_cells[1][1].configure(text="Win!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
-            if logic.game_state(game_grid.matrix) == 'lose':
-                game_grid.grid_cells[1][0].configure(text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
-                game_grid.grid_cells[1][1].configure(text="Lose!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
+    game_grid.matrix, done = game_grid.commands[key](game_grid.matrix)
+    if done:
+        game_grid.matrix = logic.add_two(game_grid.matrix)
+        # record last move
+        game_grid.history_matrixs.append(game_grid.matrix)
+        game_grid.update_grid_cells()
+        if logic.game_state(game_grid.matrix) == 'win':
+            game_grid.grid_cells[1][0].configure(text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
+            game_grid.grid_cells[1][1].configure(text="Win!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
+        if logic.game_state(game_grid.matrix) == 'lose':
+            game_grid.grid_cells[1][0].configure(text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
+            game_grid.grid_cells[1][1].configure(text="Lose!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
 
 
 # O/C simulation with size determining the frame size -> e.g. size = 4 -> Frame is 4x4
@@ -175,7 +170,12 @@ def simulate(size):
     print("Running simulation with " + str(size) + "x" + str(size) + ". Might take up to a minute.")
     while game_nr < sim_length:
         reset(game_grid)
-        move(game_grid)
+        while logic.game_state(game_grid.matrix) == 'not over':
+            rand_move = random.choice([c.KEY_UP,
+                                       c.KEY_DOWN,
+                                       c.KEY_LEFT,
+                                       c.KEY_RIGHT])
+            move(game_grid, rand_move)
         y_score.append(logic.score)
 
         game_nr = game_nr + 1
