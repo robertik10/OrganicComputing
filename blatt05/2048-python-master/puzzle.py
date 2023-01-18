@@ -5,9 +5,9 @@ import constants as c
 import matplotlib.pyplot as plt
 import numpy as np
 
-epsilon = 1
-gamma = 1
-alpha = 1
+epsilon = c.EPSILON
+gamma = c.GAMMA
+alpha = c.ALPHA
 q_table = {}  # q learning dictionary
 
 
@@ -152,17 +152,11 @@ def reset(game_grid):
 
 
 # CONTROLLER
-# verbessert
 def move(game_grid, key):
-    # old_score = logic.score
-    # old_matrix = game_grid.matrix
 
     game_grid.matrix, done = game_grid.commands[key](game_grid.matrix)
 
     if done:
-        # new_score = logic.score
-        # new_matrix = game_grid.matrix
-        # update_q(old_matrix, new_matrix, key, new_score - old_score)
 
         game_grid.matrix = logic.add_two(game_grid.matrix)
         # record last move
@@ -175,13 +169,13 @@ def move(game_grid, key):
             game_grid.grid_cells[1][0].configure(text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
             game_grid.grid_cells[1][1].configure(text="Lose!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
 
-
+# returns matrix as tuple eg: [0,0; 2, 2] -> ((0,0)(2,2))
 def matrix_to_state(matrix):
     return tuple(tuple(row) for row in matrix)
 
 
 # finds state inside q_table
-# returns the chosen action and the qvalue of that action
+# returns the chosen action and the q-value of that action
 # returns None if no state is found
 def lookup_q(matrix):
     state = matrix_to_state(matrix)
@@ -209,7 +203,7 @@ def lookup_q(matrix):
         return c.KEY_RIGHT, state_values[3]
 
 
-# inserts new state into the qtable with 0 values for all 4 actions
+# inserts new state into the q-table with 0 values for all 4 actions
 # if state already exists -> return None
 def new_q_entry(matrix):
     if lookup_q(matrix) is not None:
@@ -237,13 +231,12 @@ def update_q(matrix, new_matrix, action, reward):
     elif action == c.KEY_RIGHT:
         action_index = 3
 
-    # print("statepos : " + str(state_index))
-    # print("actpos : " + str(action_index))
+    # update q with given formula
     q_table[state][action_index] = q_table[state][action_index] + alpha * (
             reward + gamma * lookup_q(new_matrix)[1] - q_table[state][action_index])
     return
 
-
+# new move method used for q agent
 def q_move(game_grid, key):
     old_score = logic.score
     old_matrix = game_grid.matrix
@@ -271,7 +264,10 @@ def old_simulate(size):
     print("Running simulation with " + str(size) + "x" + str(size) + ". Might take up to a minute.")
     while game_nr < sim_length:
         reset(game_grid)
-        move(game_grid)
+        move(game_grid, random.choice([c.KEY_UP,
+                                   c.KEY_DOWN,
+                                   c.KEY_LEFT,
+                                   c.KEY_RIGHT]))
         y_score.append(logic.score)
 
         game_nr = game_nr + 1
@@ -288,7 +284,6 @@ def old_simulate(size):
     plt.axhline(average, color="red", label='average')
     plt.legend()
     plt.show()
-
     # close game after simulation ends
     try:
         game_grid.destroy()
@@ -300,8 +295,12 @@ def q_simulate_1_3(size):
     c.GRID_LEN = size  # change GRID_LEN constant before starting new game
     sim_length = 10000  # set simulation length
     game_grid = GameGrid()  # creates new game without starting it
+
     global epsilon
     global alpha
+
+    # initialisation of lists for plots
+    y_score = np.zeros((sim_length,))  # pre allocating list length
 
     # start simulation for sim_length amount of times or "games"
     game_nr = 0
@@ -320,15 +319,20 @@ def q_simulate_1_3(size):
                 q_move(game_grid, key)
 
         # update greek values
-        epsilon = epsilon * 0.9
-        alpha = alpha * 0.9
+        epsilon = epsilon * c.EPSILON_DECAY
+        alpha = alpha * c.ALPHA_DECAY
 
         # print values every 100 episodes
-        if game_nr % 100 == 0:
+        if game_nr % 100 == 0 and game_nr != 0:
             print("episoden nummer: " + str(game_nr))
             print("epsilon : " + str(epsilon) + ", alpha: " + str(alpha))
             print("q size: " + str(len(q_table)))
-            print("score: " + str(logic.score))
+
+            # calculate average score
+            average = 0
+            for val in y_score[game_nr - 100: game_nr - 1]: average += val
+            average = average / 100
+            print("average score = " + str(average))
 
         game_nr = game_nr + 1
 
@@ -339,17 +343,20 @@ def q_simulate_1_3(size):
         return
 
 
-def q_simulate_1_4(size):
+def q_simulate_1_4(sim_length, size):
     c.GRID_LEN = size  # change GRID_LEN constant before starting new game
-    sim_length = 10000  # set simulation length
     game_grid = GameGrid()  # creates new game without starting it
     global epsilon
     global alpha
 
     # initialisation of lists for plots
-    x = list((range(100, sim_length + 1)))
+    x = list((range(100, sim_length)))
     y_score = np.zeros((sim_length,)) #pre allocating list length
-    y_average = np.zeros((sim_length - 99,)) #pre allocating list length
+    y_average = np.zeros((sim_length - 100,)) #pre allocating list length
+    y_uninit_q = np.zeros((sim_length,))
+    y_uninit_q_average = np.zeros((sim_length - 100,))
+    y_init_q = np.zeros((sim_length,))
+    y_init_q_average = np.zeros((sim_length - 100,))
 
     # start simulation for sim_length amount of times or "games"
     game_nr = 0
@@ -363,37 +370,66 @@ def q_simulate_1_4(size):
                                            c.KEY_LEFT,
                                            c.KEY_RIGHT])
                 q_move(game_grid, rand_move)
+                y_uninit_q[game_nr] += 1
             else:
                 key = lookup_q(game_grid.matrix)[0]
                 q_move(game_grid, key)
+                y_init_q[game_nr] += 1
 
             # save new score in y_score
             y_score[game_nr] = logic.score
 
+
         # update values
-        epsilon = epsilon * 0.9  # todo als konstante einstellen
-        alpha = alpha * 0.9  # todo als konstante einstellen
-        if game_nr % 100 == 0:
+        epsilon = epsilon * c.EPSILON_DECAY
+        alpha = alpha * c.ALPHA_DECAY
+
+        if game_nr % 100 == 0 and game_nr != 0:
             print("episoden nummer: " + str(game_nr))
             print("epsilon : " + str(epsilon) + ", alpha: " + str(alpha))
             print("q size: " + str(len(q_table)))
-            print("score: " + str(logic.score))
+
+            # calculate average score
+            average = 0
+            for val in y_score[game_nr - 100: game_nr - 1]: average += val
+            average = average / 100
+            print("average score = " + str(average))
 
         game_nr = game_nr + 1
 
     # calculate average scores as stated in the task description
+    #todo uninit und init nicht ganz richtig berechnet -> lookup q auch beachten glaub ich
     i = 100
-    while i <= sim_length:
+    while i < sim_length:
         average = 0
-        for val in y_score[i - 100: i]: average += val
+        for val in y_score[i - 100: i - 1]: average += val
         average = average / 100
         # save average in y_average
         y_average[i - 100] = average
+
+        # uninit q average
+        uninit_average = 0
+        for val in y_uninit_q[i - 100: i - 1]: uninit_average += val
+        uninit_average = uninit_average / 100
+        y_uninit_q_average[i - 100] = uninit_average
+
+        #init q average
+        init_average = 0
+        for val in y_init_q[i - 100: i - 1]: init_average += val
+        init_average = init_average / 100
+        y_init_q_average[i - 100] = init_average
+
+
         i = i + 1
 
     # plot
-    plt.plot(x, y_average, linewidth=2.0, label='average score')
-    #plt.axhline(average, color="red", label='average')
+    #plt.subplot(2, 1, 1)
+    #plt.plot(x, y_average, linewidth=2.0, label='average q-agent score', color = 'green')
+
+
+    plt.plot(x, y_uninit_q_average, linewidth=2.0, label='uninit q average', color='orange')
+    plt.plot(x, y_init_q_average, linewidth=2.0, label='init q average', color='blue')
+
     plt.legend()
     plt.show()
 
@@ -404,42 +440,55 @@ def q_simulate_1_4(size):
         return
 
 
-def simulate_1_4(size):
+def simulate_1_4(sim_length, size):
     c.GRID_LEN = size  # change GRID_LEN constant before starting new game
-    sim_length = 10000  # set simulation length
     game_grid = GameGrid()  # creates new game without starting it
 
     # initialisation of lists for plots
-    x = list((range(100, sim_length + 1)))
+    x = list((range(100, sim_length)))
     y_score = np.zeros((sim_length,))  # pre allocating list length
-    y_average = np.zeros((sim_length - 99,))  # pre allocating list length
+    y_average = np.zeros((sim_length - 100,))  # pre allocating list length
 
     # start simulation for sim_length amount of times or "games"
     game_nr = 0
     print("Running simulation with " + str(size) + "x" + str(size) + ". Might take up to a minute.")
     while game_nr < sim_length:
         reset(game_grid)
-        move(game_grid)
+        while logic.game_state(game_grid.matrix) == 'not over':
+            move(game_grid, random.choice([c.KEY_UP,
+                                       c.KEY_DOWN,
+                                       c.KEY_LEFT,
+                                       c.KEY_RIGHT]))
         y_score[game_nr]=logic.score
 
         game_nr = game_nr + 1
-        print("Current Game :" + str(game_nr) + "/" + str(sim_length))
+
+        # print stats
+        if game_nr % 100 == 0:
+            print("Current Episode :" + str(game_nr) + "/" + str(sim_length))
+            # calculate average score
+            average = 0
+            for val in y_score[game_nr - 100: game_nr - 1]: average += val
+            average = average / 100
+            print("average score = " + str(average))
 
     # calculate average scores as stated in the task description
     i = 100
-    while i <= sim_length:
+    while i < sim_length:
         average = 0
-        for val in y_score[i - 100: i]: average += val
+        for val in y_score[i - 100: i - 1]: average += val
         average = average / 100
         # save average in y_average
         y_average[i - 100] = average
         i = i + 1
 
     # plot
-    plt.plot(x, y_average, linewidth=2.0, label='average score')
-    # plt.axhline(average, color="red", label='average')
+    #plt.subplot(2, 1, 2)
+    plt.plot(x, y_average, linewidth=2.0, label='average random agent score', color = 'blue')
+    plt.xlabel("Episodes")
+    plt.ylabel("Score Average over the last 100 Episodes (stacked)")
     plt.legend()
-    plt.show()
+    #plt.show()
 
     # close game after simulation ends
     try:
@@ -449,9 +498,11 @@ def simulate_1_4(size):
 
 
 # start simulation
-# simulate(2)
-# simulate(3)
-# simulate(4)
 # q_simulate_1_3(2)
-q_simulate_1_4(2)
-simulate_1_4(2)
+
+q_simulate_1_4(5000, 2)
+#simulate_1_4(10000, 2)
+#plt.axhline(68, color="red", label='maximum possible score')
+#plt.legend()
+
+#plt.show()

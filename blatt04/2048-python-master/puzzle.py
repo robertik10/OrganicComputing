@@ -114,6 +114,7 @@ class GameGrid(Frame):
             index = (gen(), gen())
         self.matrix[index[0]][index[1]] = 2
 
+
 # OBSERVER
 def state(game_grid):
     # find out if game_grid is finished
@@ -130,6 +131,7 @@ def state(game_grid):
 
     return matrix, current_score, finished
 
+
 # CONTROLLER
 def reset(game_grid):
     logic.update_score(0)
@@ -137,10 +139,9 @@ def reset(game_grid):
     game_grid.history_matrixs = []
     game_grid.update_grid_cells()
 
+
 # CONTROLLER
-
 def move(game_grid):
-
     while logic.game_state(game_grid.matrix) == 'not over':
         rand_move = random.choice([c.KEY_UP,
                                    c.KEY_DOWN,
@@ -162,7 +163,7 @@ def move(game_grid):
 
 # O/C simulation with size determining the frame size -> e.g. size = 4 -> Frame is 4x4
 def simulate(size):
-    c.GRID_LEN = size   # change GRID_LEN constant before starting new game
+    c.GRID_LEN = size  # change GRID_LEN constant before starting new game
     sim_length = 100  # set simulation length
     game_grid = GameGrid()  # creates new game without starting it
 

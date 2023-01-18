@@ -12,6 +12,7 @@ import constants as c
 score = c.DEFAULT_SCORE  # OBSERVER
 
 
+
 #######
 # Task 1a #
 #######
