@@ -1,7 +1,7 @@
-# new
+
 # observer
 DEFAULT_SCORE = 0
-# new
+
 
 SIZE = 400
 GRID_LEN = 4

@@ -3,6 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="035b4ba1-2f91-4c0a-8d7b-6e4ed9eebb6a" name="Default Changelist" comment="move methode richtig gemacht">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/blatt05/2048-python-master/constants.py" beforeDir="false" afterPath="$PROJECT_DIR$/blatt05/2048-python-master/constants.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/blatt05/2048-python-master/puzzle.py" beforeDir="false" afterPath="$PROJECT_DIR$/blatt05/2048-python-master/puzzle.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -20,13 +22,13 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "last_opened_file_path": "C:/Users/rober/PycharmProjects/OrganicComputing/blatt05"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/rober/PycharmProjects/OrganicComputing/blatt05&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\rober\PycharmProjects\OrganicComputing\blatt05" />
@@ -190,7 +192,14 @@
       <option name="project" value="LOCAL" />
       <updated>1673884210083</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="move methode richtig gemacht">
+      <created>1673884852430</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1673884852430</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -217,5 +226,16 @@
     <MESSAGE value="Ordner für Blatt 05 erstellt" />
     <MESSAGE value="move methode richtig gemacht" />
     <option name="LAST_COMMIT_MESSAGE" value="move methode richtig gemacht" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <default-breakpoints>
+        <breakpoint type="python-exception">
+          <properties notifyOnTerminate="true" exception="BaseException">
+            <option name="notifyOnTerminate" value="true" />
+          </properties>
+        </breakpoint>
+      </default-breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
