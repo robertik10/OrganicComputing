@@ -347,9 +347,9 @@ def q_simulate_1_4(size):
     global alpha
 
     # initialisation of lists for plots
-    x = list((range(0, sim_length)))
-    y_score = np.array([])
-    y_average = np.array([])
+    x = list((range(100, sim_length + 1)))
+    y_score = np.zeros((sim_length,)) #pre allocating list length
+    y_average = np.zeros((sim_length - 99,)) #pre allocating list length
 
     # start simulation for sim_length amount of times or "games"
     game_nr = 0
@@ -368,31 +368,34 @@ def q_simulate_1_4(size):
                 q_move(game_grid, key)
 
             # save new score in y_score
-            y_score.append(logic.score)
+            y_score[game_nr] = logic.score
 
         # update values
         epsilon = epsilon * 0.9  # todo als konstante einstellen
         alpha = alpha * 0.9  # todo als konstante einstellen
-        print("episoden nummer: " + str(game_nr))
-        print("epsilon : " + str(epsilon) + ", alpha: " + str(alpha))
-        print("q size: " + str(len(q_table)))
-        print("score: " + str(logic.score))
+        if game_nr % 100 == 0:
+            print("episoden nummer: " + str(game_nr))
+            print("epsilon : " + str(epsilon) + ", alpha: " + str(alpha))
+            print("q size: " + str(len(q_table)))
+            print("score: " + str(logic.score))
 
         game_nr = game_nr + 1
 
     # calculate average scores as stated in the task description
     i = 100
-    if game_nr > 99:
+    while i <= sim_length:
         average = 0
-        for val in y_score[game_nr - 100: game_nr]: average += val
+        for val in y_score[i - 100: i]: average += val
         average = average / 100
-        print("average score = " + str(average))
+        # save average in y_average
+        y_average[i - 100] = average
+        i = i + 1
 
-        # plot
-        plt.plot(x, y_score, linewidth=2.0, label='score')
-        plt.axhline(average, color="red", label='average')
-        plt.legend()
-        plt.show()
+    # plot
+    plt.plot(x, y_average, linewidth=2.0, label='average score')
+    #plt.axhline(average, color="red", label='average')
+    plt.legend()
+    plt.show()
 
     # close game after simulation ends
     try:
@@ -403,12 +406,13 @@ def q_simulate_1_4(size):
 
 def simulate_1_4(size):
     c.GRID_LEN = size  # change GRID_LEN constant before starting new game
-    sim_length = 100  # set simulation length
+    sim_length = 10000  # set simulation length
     game_grid = GameGrid()  # creates new game without starting it
 
     # initialisation of lists for plots
-    x = list((range(0, sim_length)))
-    y_score = []
+    x = list((range(100, sim_length + 1)))
+    y_score = np.zeros((sim_length,))  # pre allocating list length
+    y_average = np.zeros((sim_length - 99,))  # pre allocating list length
 
     # start simulation for sim_length amount of times or "games"
     game_nr = 0
@@ -416,20 +420,24 @@ def simulate_1_4(size):
     while game_nr < sim_length:
         reset(game_grid)
         move(game_grid)
-        y_score.append(logic.score)
+        y_score[game_nr]=logic.score
 
         game_nr = game_nr + 1
         print("Current Game :" + str(game_nr) + "/" + str(sim_length))
 
-    # calculate average score
-    average = 0
-    for val in y_score: average += val
-    average = average / sim_length
-    print("average score = " + str(average))
+    # calculate average scores as stated in the task description
+    i = 100
+    while i <= sim_length:
+        average = 0
+        for val in y_score[i - 100: i]: average += val
+        average = average / 100
+        # save average in y_average
+        y_average[i - 100] = average
+        i = i + 1
 
     # plot
-    plt.plot(x, y_score, linewidth=2.0, label='score')
-    plt.axhline(average, color="red", label='average')
+    plt.plot(x, y_average, linewidth=2.0, label='average score')
+    # plt.axhline(average, color="red", label='average')
     plt.legend()
     plt.show()
 
