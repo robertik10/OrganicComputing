@@ -8,7 +8,7 @@ import numpy as np
 epsilon = c.EPSILON
 gamma = c.GAMMA
 alpha = c.ALPHA
-q_table = {}  # q learning dictionary
+q_table = {}  # q learning dictionary with tuple as key and np array as values
 
 
 def gen():
@@ -37,13 +37,14 @@ class GameGrid(Frame):
             c.KEY_RIGHT_ALT2: logic.right,
         }
 
+
         self.grid_cells = []
         self.init_grid()
         self.matrix = logic.new_game(c.GRID_LEN)
         self.history_matrixs = []
         self.update_grid_cells()
 
-        # self.mainloop()
+        #self.mainloop()
 
     def init_grid(self):
         background = Frame(self, bg=c.BACKGROUND_COLOR_GAME, width=c.SIZE, height=c.SIZE)
@@ -169,7 +170,7 @@ def move(game_grid, key):
             game_grid.grid_cells[1][0].configure(text="You", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
             game_grid.grid_cells[1][1].configure(text="Lose!", bg=c.BACKGROUND_COLOR_CELL_EMPTY)
 
-# returns matrix as tuple eg: [0,0; 2, 2] -> ((0,0)(2,2))
+# returns matrix as tuple eg: [[0,0], [2, 2]] -> ((0,0)(2,2))
 def matrix_to_state(matrix):
     return tuple(tuple(row) for row in matrix)
 
@@ -202,6 +203,15 @@ def lookup_q(matrix):
     elif action_index == 3:
         return c.KEY_RIGHT, state_values[3]
 
+def action_index_to_key(action_index):
+    if action_index == 0:
+        return c.KEY_UP
+    elif action_index == 1:
+        return c.KEY_DOWN
+    elif action_index == 2:
+        return c.KEY_LEFT
+    elif action_index == 3:
+        return c.KEY_RIGHT
 
 # inserts new state into the q-table with 0 values for all 4 actions
 # if state already exists -> return None
@@ -291,9 +301,8 @@ def old_simulate(size):
         return
 
 
-def q_simulate_1_3(size):
+def q_simulate_1_3(sim_length, size):
     c.GRID_LEN = size  # change GRID_LEN constant before starting new game
-    sim_length = 10000  # set simulation length
     game_grid = GameGrid()  # creates new game without starting it
 
     global epsilon
@@ -318,6 +327,9 @@ def q_simulate_1_3(size):
                 key = lookup_q(game_grid.matrix)[0]
                 q_move(game_grid, key)
 
+        # update score
+        y_score[game_nr] = logic.score
+
         # update greek values
         epsilon = epsilon * c.EPSILON_DECAY
         alpha = alpha * c.ALPHA_DECAY
@@ -325,7 +337,7 @@ def q_simulate_1_3(size):
         # print values every 100 episodes
         if game_nr % 100 == 0 and game_nr != 0:
             print("episoden nummer: " + str(game_nr))
-            print("epsilon : " + str(epsilon) + ", alpha: " + str(alpha))
+            print("epsilon: " + str(epsilon) + ", alpha: " + str(alpha))
             print("q size: " + str(len(q_table)))
 
             # calculate average score
@@ -351,12 +363,8 @@ def q_simulate_1_4(sim_length, size):
 
     # initialisation of lists for plots
     x = list((range(100, sim_length)))
-    y_score = np.zeros((sim_length,)) #pre allocating list length
-    y_average = np.zeros((sim_length - 100,)) #pre allocating list length
-    y_uninit_q = np.zeros((sim_length,))
-    y_uninit_q_average = np.zeros((sim_length - 100,))
-    y_init_q = np.zeros((sim_length,))
-    y_init_q_average = np.zeros((sim_length - 100,))
+    y_score = np.zeros((sim_length,))
+    y_average = np.zeros((sim_length - 100,))
 
     # start simulation for sim_length amount of times or "games"
     game_nr = 0
@@ -370,11 +378,10 @@ def q_simulate_1_4(sim_length, size):
                                            c.KEY_LEFT,
                                            c.KEY_RIGHT])
                 q_move(game_grid, rand_move)
-                y_uninit_q[game_nr] += 1
+
             else:
-                key = lookup_q(game_grid.matrix)[0]
+                key, value = lookup_q(game_grid.matrix)
                 q_move(game_grid, key)
-                y_init_q[game_nr] += 1
 
             # save new score in y_score
             y_score[game_nr] = logic.score
@@ -397,41 +404,21 @@ def q_simulate_1_4(sim_length, size):
 
         game_nr = game_nr + 1
 
-    # calculate average scores as stated in the task description
-    #todo uninit und init nicht ganz richtig berechnet -> lookup q auch beachten glaub ich
+    # calculate averages as stated in the task description
     i = 100
     while i < sim_length:
+        # average score
         average = 0
         for val in y_score[i - 100: i - 1]: average += val
         average = average / 100
         # save average in y_average
         y_average[i - 100] = average
 
-        # uninit q average
-        uninit_average = 0
-        for val in y_uninit_q[i - 100: i - 1]: uninit_average += val
-        uninit_average = uninit_average / 100
-        y_uninit_q_average[i - 100] = uninit_average
-
-        #init q average
-        init_average = 0
-        for val in y_init_q[i - 100: i - 1]: init_average += val
-        init_average = init_average / 100
-        y_init_q_average[i - 100] = init_average
-
-
         i = i + 1
 
     # plot
-    #plt.subplot(2, 1, 1)
-    #plt.plot(x, y_average, linewidth=2.0, label='average q-agent score', color = 'green')
-
-
-    plt.plot(x, y_uninit_q_average, linewidth=2.0, label='uninit q average', color='orange')
-    plt.plot(x, y_init_q_average, linewidth=2.0, label='init q average', color='blue')
-
-    plt.legend()
-    plt.show()
+    #plt.subplot(2, 1, 1) wird nicht mehr verwendet
+    plt.plot(x, y_average, linewidth=2.0, label='average q-agent score', color = 'green')
 
     # close game after simulation ends
     try:
@@ -483,12 +470,11 @@ def simulate_1_4(sim_length, size):
         i = i + 1
 
     # plot
-    #plt.subplot(2, 1, 2)
+    #plt.subplot(2, 1, 2) nicht mehr in verwendung
     plt.plot(x, y_average, linewidth=2.0, label='average random agent score', color = 'blue')
     plt.xlabel("Episodes")
     plt.ylabel("Score Average over the last 100 Episodes (stacked)")
     plt.legend()
-    #plt.show()
 
     # close game after simulation ends
     try:
@@ -496,13 +482,132 @@ def simulate_1_4(sim_length, size):
     finally:
         return
 
+def q_test(sim_length, size):
+    c.GRID_LEN = size  # change GRID_LEN constant before starting new game
+    game_grid = GameGrid()  # creates new game without starting it
+    global epsilon
+    global alpha
+
+    # initialisation of lists for plots
+    x = list((range(100, sim_length)))
+    y_uninit_q = np.zeros((sim_length,))
+    y_uninit_q_average = np.zeros((sim_length - 100,))
+    y_init_q = np.zeros((sim_length,))
+    y_init_q_average = np.zeros((sim_length - 100,))
+
+    # start simulation for sim_length amount of times or "games"
+    game_nr = 0
+    print("Running simulation with " + str(size) + "x" + str(size) + ". Might take a while.")
+    while game_nr < sim_length:
+        reset(game_grid)
+        while logic.game_state(game_grid.matrix) == 'not over':
+            if random.random() < epsilon:  # random choice instead of q table
+                rand_move = random.choice([c.KEY_UP,
+                                           c.KEY_DOWN,
+                                           c.KEY_LEFT,
+                                           c.KEY_RIGHT])
+                q_move(game_grid, rand_move)
+
+                # update plot values for decisions based on uninit qtable values
+                y_uninit_q[game_nr] += 1
+            else:
+                key, value = lookup_q(game_grid.matrix)
+                q_move(game_grid, key)
+
+                # update plot values for decisions based on init/uninit qtable values
+                if value == 0:
+                    y_uninit_q[game_nr] += 1
+                else:
+                    y_init_q[game_nr] += 1
+
+
+        # update values
+        epsilon = epsilon * c.EPSILON_DECAY
+        alpha = alpha * c.ALPHA_DECAY
+
+        if game_nr % 100 == 0 and game_nr != 0:
+            print("episoden nummer: " + str(game_nr))
+            print("epsilon : " + str(epsilon) + ", alpha: " + str(alpha))
+            print("q size: " + str(len(q_table)))
+
+        game_nr = game_nr + 1
+
+    # calculate averages as stated in the task description
+    i = 100
+    while i < sim_length:
+
+        # uninit q average
+        uninit_average = 0
+        for val in y_uninit_q[i - 100: i - 1]: uninit_average += val
+        uninit_average = uninit_average / 100
+        y_uninit_q_average[i - 100] = uninit_average
+
+        # init q average
+        init_average = 0
+        for val in y_init_q[i - 100: i - 1]: init_average += val
+        init_average = init_average / 100
+        y_init_q_average[i - 100] = init_average
+
+
+        i = i + 1
+
+    plt.plot(x, y_uninit_q_average, linewidth=2.0, label='uninit q average', color='orange')
+    plt.plot(x, y_init_q_average, linewidth=2.0, label='init q average', color='blue')
+
+    plt.legend()
+    plt.show()
+
+    # close game after simulation ends
+    try:
+        game_grid.destroy()
+    finally:
+        return
+
+# resets qtable as well as global variables associated with it (alpha epsilon gamma)
+def reset_q_learned():
+    global epsilon
+    global alpha
+    global gamma
+    q_table.clear()
+    epsilon = c.EPSILON
+    alpha = c.ALPHA
+    gamma = c.GAMMA
+
+# print out q table stats as stated in blatt 5 1.5
+def q_stats():
+    print("q-table size: "+ str(len(q_table)))
+    # all states with 2x2s and 2x0s
+    states = [((2,2),(0,0)),
+              ((2,0),(2,0)),
+              ((2,0),(0,2)),
+              ((0,2),(0,2)),
+              ((0,0),(2,2)),
+              ((0,2),(2,0))]
+    for m_state in states:
+        state = matrix_to_state(m_state)
+        print("State: " + str(state) + " | Best move: " + str(action_index_to_key(np.argmax(q_table.get(state)))))
+
+
+
+def main_1_3(sim_length):
+    q_simulate_1_3(sim_length, 2)
+def main_1_4(sim_length):
+    q_simulate_1_4(sim_length, 2)
+    simulate_1_4(sim_length, 2)
+    plt.axhline(68, color="red", label='maximum possible score')
+    plt.legend()
+    plt.show()
+def main_1_4_q_test(sim_length):
+    q_test(sim_length, 2)
 
 # start simulation
-# q_simulate_1_3(2)
 
-q_simulate_1_4(5000, 2)
-#simulate_1_4(10000, 2)
-#plt.axhline(68, color="red", label='maximum possible score')
-#plt.legend()
+#main_1_3(10000)
+#q_stats()
+#reset_q_learned()
+#main_1_4(5000)
+#reset_q_learned()
+main_1_4_q_test(10000)
 
-#plt.show()
+
+
