@@ -222,7 +222,7 @@ def new_q_entry(matrix):
     q_table[state] = np.zeros(4)
 
 
-# update q_table
+# updates q_table
 def update_q(matrix, new_matrix, action, reward):
     state = matrix_to_state(matrix)
     # new_state = matrix_to_state(new_matrix)
@@ -248,6 +248,7 @@ def update_q(matrix, new_matrix, action, reward):
 
 # new move method used for q agent
 def q_move(game_grid, key):
+    # save old score and old matrix for update of q table
     old_score = logic.score
     old_matrix = game_grid.matrix
 
@@ -482,6 +483,7 @@ def simulate_1_4(sim_length, size):
     finally:
         return
 
+# tests if q table is being used properly
 def q_test(sim_length, size):
     c.GRID_LEN = size  # change GRID_LEN constant before starting new game
     game_grid = GameGrid()  # creates new game without starting it
